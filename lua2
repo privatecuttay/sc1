@@ -1,4 +1,4 @@
-print("3")
+print("4")
 local Solar = loadstring(Game:HttpGet("https://raw.githubusercontent.com/HuynkKhoa1/SolarhubUI001/refs/heads/main/Custom_Solar.lua", true))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Th4nh1204/SaveManager.lua/refs/heads/main/Solar"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Th4nh1204/InterfaceManager.lua/refs/heads/main/Solar"))()
@@ -69,7 +69,7 @@ end
     end
     
     if Solar.Options and Solar.Options.ModifierDropdown and getgenv().Config["Mutations"] then
-        local selectedMutation = "Moonlit"
+        local selectedMutation = "All"
         
         for mutationName, isSelected in pairs(getgenv().Config["Mutations"]) do
             if isSelected then
@@ -1276,16 +1276,16 @@ local function autoFavoriteFruits()
     return favoriteCount, totalCount
 end
 
-local modifiers = {"Gold", "Rainbow", "Wet", "Chilled", "Frozen", "Shocked", "Moonlit", "Chocolate"}
+local modifiers = {"All", "Gold", "Rainbow", "Wet", "Chilled", "Frozen", "Shocked", "Moonlit", "Chocolate"}
 
 Main2:AddDropdown("ModifierDropdown", {
     Title = "Select Mutation",
     Description = "Select mutation to favorite",
     Values = modifiers,
-    Default = "Moonlit",
+    Default = "All",
     Multi = false,
     Callback = function(Value)
-        if Value == "Moonlit" then
+        if Value == "All" then
             autoFavoriteConfig.selectedModifiers = {}
         else
             autoFavoriteConfig.selectedModifiers = {Value}
