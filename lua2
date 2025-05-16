@@ -1,3 +1,4 @@
+print("1")
 local Solar = loadstring(Game:HttpGet("https://raw.githubusercontent.com/HuynkKhoa1/SolarhubUI001/refs/heads/main/Custom_Solar.lua", true))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Th4nh1204/SaveManager.lua/refs/heads/main/Solar"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Th4nh1204/InterfaceManager.lua/refs/heads/main/Solar"))()
@@ -67,15 +68,16 @@ end
         Solar.Options.MinWeightSlider:SetValue(getgenv().Config["Min Weight"])
     end
     
-    if Solar.Options and Solar.Options.ModifierDropdown and getgenv().Config["Mutations"] then
+    -- Sửa phần xử lý Mutations
+if Solar.Options and Solar.Options.ModifierDropdown and getgenv().Config["Mutations"] then
     local selectedMutations = {}
-    for mutation, isSelected in pairs(getgenv().Config["Mutations"]) do
+    for mutationName, isSelected in pairs(getgenv().Config["Mutations"]) do
         if isSelected then
-            table.insert(selectedMutations, mutation)
+            table.insert(selectedMutations, mutationName) -- Thêm vào danh sách nếu = true
         end
     end
-    Solar.Options.ModifierDropdown:SetValue(selectedMutations)
-    end
+    Solar.Options.ModifierDropdown:SetValue(selectedMutations) -- Truyền dạng array {"Moonlit", ...}
+end
     
     if getgenv().Config["Auto Buy Seeds"] then
         if Solar.Options and Solar.Options.AutoBuyLENGEN and getgenv().Config["Auto Buy Seeds"]["Legendary"] ~= nil then
@@ -1282,19 +1284,10 @@ local ModifierDropdown = Main2:AddDropdown("ModifierDropdown", {
 
 ModifierDropdown:OnChanged(function(Value)
     autoFavoriteConfig.selectedModifiers = {}
-    print("ModifierDropdown values:", Value)
-    if not Value or type(Value) ~= "table" then
-        return
-    end
-    for modifierName, State in pairs(Value) do
-        if State == true then
+    for modifierName, isSelected in pairs(Value) do
+        if isSelected then
             table.insert(autoFavoriteConfig.selectedModifiers, modifierName)
-            print("Added modifier:", modifierName)
         end
-    end
-    print("Selected modifiers:", table.concat(autoFavoriteConfig.selectedModifiers, ", "))
-        if autoFavoriteConfig.enabled then
-        pcall(autoFavoriteFruits)
     end
 end)
 
