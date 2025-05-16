@@ -30,23 +30,22 @@ local function applyConfigFromGlobal()
     end
     
     if getgenv().Config and getgenv().Config["Plant Mode"] then
-        if Solar.Options and Solar.Options.PlantModeDropdown then
-            local plantModeValues = {
-                ["All"] = getgenv().Config["Plant Mode"]["All"] or false,
-                ["Legendary Seeds"] = getgenv().Config["Plant Mode"]["Legendary Seeds"] or false,
-                ["Mythical Seeds"] = getgenv().Config["Plant Mode"]["Mythical Seeds"] or false,
-                ["Divine Seeds"] = getgenv().Config["Plant Mode"]["Divine Seeds"] or false
-            }
-            
-            Solar.Options.PlantModeDropdown:SetValue(plantModeValues)
+    if Solar.Options and Solar.Options.PlantModeDropdown then
+        local selectedModes = {}
+        for mode, isSelected in pairs(getgenv().Config["Plant Mode"]) do
+            if isSelected and mode ~= "UseCustomSeeds" and mode ~= "CustomSeedsList" then
+                table.insert(selectedModes, mode)
+            end
         end
-        
-        useCustomSeeds = getgenv().Config["Plant Mode"]["UseCustomSeeds"] or false
-        
-        if getgenv().Config["Plant Mode"]["CustomSeedsList"] and type(getgenv().Config["Plant Mode"]["CustomSeedsList"]) == "table" then
-            customSeedsList = getgenv().Config["Plant Mode"]["CustomSeedsList"]
-        end
+        Solar.Options.PlantModeDropdown:SetValue(selectedModes)
     end
+    
+    useCustomSeeds = getgenv().Config["Plant Mode"]["UseCustomSeeds"] or false
+    
+    if getgenv().Config["Plant Mode"]["CustomSeedsList"] and type(getgenv().Config["Plant Mode"]["CustomSeedsList"]) == "table" then
+        customSeedsList = getgenv().Config["Plant Mode"]["CustomSeedsList"]
+    end
+end
     
     if Solar.Options and Solar.Options.AutoCollectSeeds and getgenv().Config["Auto Collect"] ~= nil then
         Solar.Options.AutoCollectSeeds:SetValue(getgenv().Config["Auto Collect"])
@@ -69,16 +68,13 @@ local function applyConfigFromGlobal()
     end
     
     if Solar.Options and Solar.Options.ModifierDropdown and getgenv().Config["Mutations"] then
-    -- KHÔNG gọi SetValue ngay lập tức
-    
-    -- Xử lý trước dữ liệu trong config
-    local mutationValues = {}
-    for modifierName, isEnabled in pairs(getgenv().Config["Mutations"]) do
-        mutationValues[modifierName] = isEnabled -- chỉ copy giá trị true/false
+    local selectedMutations = {}
+    for mutation, isSelected in pairs(getgenv().Config["Mutations"]) do
+        if isSelected then
+            table.insert(selectedMutations, mutation)
+        end
     end
-    
-    -- Bây giờ mới gọi SetValue với dữ liệu đã kiểm tra
-    Solar.Options.ModifierDropdown:SetValue(mutationValues)
+    Solar.Options.ModifierDropdown:SetValue(selectedMutations)
     end
     
     if getgenv().Config["Auto Buy Seeds"] then
@@ -776,19 +772,12 @@ Main01:AddDropdown("PlantModeDropdown", {
     Default = {"All"},
     Multi = true,
     Callback = function(Value)
-        -- Tạo bảng mới thay vì thêm vào bảng hiện có
-        local newSelectedPlantMode = {}
-        
-        if type(Value) == "table" then
-            for mode, isSelected in pairs(Value) do
-                if isSelected == true then
-                    table.insert(newSelectedPlantMode, mode)
-                end
+        selectedPlantMode = {}
+        for mode, isSelected in pairs(Value) do
+            if isSelected then
+                table.insert(selectedPlantMode, mode)
             end
         end
-        
-        -- Gán bảng mới
-        selectedPlantMode = newSelectedPlantMode
         
         if autoPlantEnabled then
             stopAutoPlant()
@@ -1292,23 +1281,19 @@ local ModifierDropdown = Main2:AddDropdown("ModifierDropdown", {
 })
 
 ModifierDropdown:OnChanged(function(Value)
-    -- Tạo bảng trống mới thay vì thêm vào bảng hiện có
-    local newSelectedModifiers = {}
-    
-    -- Kiểm tra Value có phải là bảng hợp lệ không
-    if type(Value) == "table" then
-        for modifierName, State in pairs(Value) do
-            if State == true then
-                table.insert(newSelectedModifiers, modifierName)
-            end
+    autoFavoriteConfig.selectedModifiers = {}
+    print("ModifierDropdown values:", Value)
+    if not Value or type(Value) ~= "table" then
+        return
+    end
+    for modifierName, State in pairs(Value) do
+        if State == true then
+            table.insert(autoFavoriteConfig.selectedModifiers, modifierName)
+            print("Added modifier:", modifierName)
         end
     end
-    
-    -- Gán bảng mới vào biến toàn cục
-    autoFavoriteConfig.selectedModifiers = newSelectedModifiers
-    
-    -- Áp dụng cài đặt nếu tính năng đang được bật
-    if autoFavoriteConfig.enabled then
+    print("Selected modifiers:", table.concat(autoFavoriteConfig.selectedModifiers, ", "))
+        if autoFavoriteConfig.enabled then
         pcall(autoFavoriteFruits)
     end
 end)
