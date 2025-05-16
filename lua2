@@ -1,4 +1,3 @@
-print("1")
 local Solar = loadstring(Game:HttpGet("https://raw.githubusercontent.com/HuynkKhoa1/SolarhubUI001/refs/heads/main/Custom_Solar.lua", true))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Th4nh1204/SaveManager.lua/refs/heads/main/Solar"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Th4nh1204/InterfaceManager.lua/refs/heads/main/Solar"))()
@@ -48,6 +47,7 @@ local function applyConfigFromGlobal()
     end
     if Solar.Options and Solar.Options.HarvestModeDropdown and getgenv().Config["Collect Mode"] then
     local collectMode = getgenv().Config["Collect Mode"]
+    
     if type(collectMode) == "string" then
         local newValue = {}
         if collectMode == "All" then
@@ -63,8 +63,8 @@ local function applyConfigFromGlobal()
     
     elseif type(collectMode) == "table" then
         Solar.Options.HarvestModeDropdown:SetValue(collectMode)
-        end
     end
+end
     if Solar.Options and Solar.Options.AutoSell and getgenv().Config["Auto Sell"] ~= nil then
         Solar.Options.AutoSell:SetValue(getgenv().Config["Auto Sell"])
     end
@@ -798,36 +798,33 @@ Main01:AddToggle("AutoPlantSeeds", {
 end)
 
 local isSellingInProgress = false
-local harvestMode = "All"
+local harvestMode = nil
 local selectedHarvestOptions = {}
-
+local mutationsCollect = {"All", "Only Moonlit", "Only Shocked"}
 Main1:AddDropdown("HarvestModeDropdown", {
-    Title = "Collect Modes",
+    Title = "Collect Mode",
     Description = "Select mutation fruits to collect",
-    Values = {"All", "Only Moonlit", "Only Shocked"},
+    Values = mutationsCollect,
     Default = {},
     Multi = true,
     Callback = function(Value)
         selectedHarvestOptions = Value
-        
-        local hasSelection = false
-        for _, isSelected in pairs(Value) do
+        harvestModes = {}
+        for modeName, isSelected in pairs(Value) do
             if isSelected then
-                hasSelection = true
-                break
+                table.insert(harvestModes, modeName)
             end
         end
-        if not hasSelection then
+        
+        if #harvestModes == 0 then
             harvestMode = nil
-            return
-        end
-        if Value["All"] then
+        elseif table.find(harvestModes, "All") then
             harvestMode = "All"
-        elseif Value["Only Moonlit"] and Value["Only Shocked"] then
+        elseif table.find(harvestModes, "Only Moonlit") and table.find(harvestModes, "Only Shocked") then
             harvestMode = "Moonlit_and_Shocked"
-        elseif Value["Only Moonlit"] then
+        elseif table.find(harvestModes, "Only Moonlit") then
             harvestMode = "Only Moonlit"
-        elseif Value["Only Shocked"] then
+        elseif table.find(harvestModes, "Only Shocked") then
             harvestMode = "Only Shocked"
         end
     end
@@ -1200,8 +1197,6 @@ local autoFavoriteConfig = {
     minWeight = 0.2
 }
 
-local modifiers = {"Gold", "Rainbow", "Wet", "Chilled", "Frozen", "Shocked", "Moonlit", "Chocolate"}
-
 local function extractWeight(itemName)
     local weightStr = itemName:match("%[([%d%.]+)kg%]")
     if weightStr then
@@ -1289,8 +1284,9 @@ local function autoFavoriteFruits()
     
     return favoriteCount, totalCount
 end
+local modifiers = {"Gold", "Rainbow", "Wet", "Chilled", "Frozen", "Shocked", "Moonlit", "Chocolate"}
 
-local ModifierDropdown = Main2:AddDropdown("ModifierDropdown", {
+Main2:AddDropdown("ModifierDropdown", {
     Title = "Select Mutations",
     Description = "Select mutations to favorite",
     Values = modifiers,
