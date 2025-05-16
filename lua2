@@ -24,11 +24,9 @@ local customSeedsList = {}
 
 local function applyConfigFromGlobal()
     if not getgenv().Config then return end
-    
     if Solar.Options and Solar.Options.AutoPlantSeeds and getgenv().Config["Auto Plant"] ~= nil then
         Solar.Options.AutoPlantSeeds:SetValue(getgenv().Config["Auto Plant"])
     end
-    
     if getgenv().Config and getgenv().Config["Plant Mode"] then
     if Solar.Options and Solar.Options.PlantModeDropdown then
         local selectedModes = {}
@@ -39,34 +37,42 @@ local function applyConfigFromGlobal()
         end
         Solar.Options.PlantModeDropdown:SetValue(selectedModes)
     end
-    
     useCustomSeeds = getgenv().Config["Plant Mode"]["UseCustomSeeds"] or false
-    
     if getgenv().Config["Plant Mode"]["CustomSeedsList"] and type(getgenv().Config["Plant Mode"]["CustomSeedsList"]) == "table" then
         customSeedsList = getgenv().Config["Plant Mode"]["CustomSeedsList"]
+        end
     end
-end
-    
     if Solar.Options and Solar.Options.AutoCollectSeeds and getgenv().Config["Auto Collect"] ~= nil then
         Solar.Options.AutoCollectSeeds:SetValue(getgenv().Config["Auto Collect"])
     end
-    
     if Solar.Options and Solar.Options.HarvestModeDropdown and getgenv().Config["Collect Mode"] then
-        Solar.Options.HarvestModeDropdown:SetValue(getgenv().Config["Collect Mode"])
-    end
+    local collectMode = getgenv().Config["Collect Mode"]
+    if type(collectMode) == "string" then
+        local newValue = {}
+        if collectMode == "All" then
+            newValue["All"] = true
+        elseif collectMode == "Only Moonlit" then
+            newValue["Only Moonlit"] = true
+        elseif collectMode == "Only Shocked" then
+            newValue["Only Shocked"] = true
+        else
+            newValue["All"] = true
+        end
+        Solar.Options.HarvestModeDropdown:SetValue(newValue)
     
+    elseif type(collectMode) == "table" then
+        Solar.Options.HarvestModeDropdown:SetValue(collectMode)
+        end
+    end
     if Solar.Options and Solar.Options.AutoSell and getgenv().Config["Auto Sell"] ~= nil then
         Solar.Options.AutoSell:SetValue(getgenv().Config["Auto Sell"])
     end
-    
     if Solar.Options and Solar.Options.AutoFavoriteToggle and getgenv().Config["Auto Favorite"] ~= nil then
         Solar.Options.AutoFavoriteToggle:SetValue(getgenv().Config["Auto Favorite"])
     end
-    
     if Solar.Options and Solar.Options.MinWeightSlider and getgenv().Config["Min Weight"] ~= nil then
         Solar.Options.MinWeightSlider:SetValue(getgenv().Config["Min Weight"])
     end
-    
     if Solar.Options and Solar.Options.ModifierDropdown and getgenv().Config["Mutations"] then
     if type(getgenv().Config["Mutations"]) == "table" then
         local selectedMutations = {}
@@ -76,30 +82,24 @@ end
                 selectedMutations[mutationName] = true
             end
         end
-        
         Solar.Options.ModifierDropdown:SetValue(selectedMutations)
         end
     end
-    
     if getgenv().Config["Auto Buy Seeds"] then
         if Solar.Options and Solar.Options.AutoBuyLENGEN and getgenv().Config["Auto Buy Seeds"]["Legendary"] ~= nil then
             Solar.Options.AutoBuyLENGEN:SetValue(getgenv().Config["Auto Buy Seeds"]["Legendary"])
         end
-        
         if Solar.Options and Solar.Options.AutoBuyMYTH and getgenv().Config["Auto Buy Seeds"]["Mythical"] ~= nil then
             Solar.Options.AutoBuyMYTH:SetValue(getgenv().Config["Auto Buy Seeds"]["Mythical"])
         end
-        
         if Solar.Options and Solar.Options.AutoBuyDIVINE and getgenv().Config["Auto Buy Seeds"]["Divine"] ~= nil then
             Solar.Options.AutoBuyDIVINE:SetValue(getgenv().Config["Auto Buy Seeds"]["Divine"])
         end
     end
-    
     if getgenv().Config["Webhook"] then
         if Solar.Options and Solar.Options.EnableShecklesWebhook and getgenv().Config["Webhook"]["Enabled"] ~= nil then
             Solar.Options.EnableShecklesWebhook:SetValue(getgenv().Config["Webhook"]["Enabled"])
         end
-        
         if getgenv().Config["Webhook"]["URL"] and getgenv().Config["Webhook"]["URL"] ~= "" then
             shecklesWebhookConfig.url = getgenv().Config["Webhook"]["URL"]
             
@@ -107,7 +107,6 @@ end
                 Solar.Options.ShecklesWebhookURL:SetValue(getgenv().Config["Webhook"]["URL"])
             end
         end
-        
         if getgenv().Config["Webhook"]["UserID"] and getgenv().Config["Webhook"]["UserID"] ~= "" then
             shecklesWebhookConfig.userId = getgenv().Config["Webhook"]["UserID"]
             
@@ -115,28 +114,22 @@ end
                 Solar.Options.ShecklesWebhookUserID:SetValue(getgenv().Config["Webhook"]["UserID"])
             end
         end
-        
         if Solar.Options and Solar.Options.EnableShecklesWebhookPing and getgenv().Config["Webhook"]["Ping"] ~= nil then
             Solar.Options.EnableShecklesWebhookPing:SetValue(getgenv().Config["Webhook"]["Ping"])
         end
-        
         if Solar.Options and Solar.Options.WebhookInterval and getgenv().Config["Webhook"]["Interval"] ~= nil then
             Solar.Options.WebhookInterval:SetValue(getgenv().Config["Webhook"]["Interval"])
         end
     end
-    
     if Solar.Options and Solar.Options.BlackScreenToggle and getgenv().Config["Black Screen"] ~= nil then
         Solar.Options.BlackScreenToggle:SetValue(getgenv().Config["Black Screen"])
     end
-    
     if Solar.Options and Solar.Options.AntiAFKToggle and getgenv().Config["Anti AFK"] ~= nil then
         Solar.Options.AntiAFKToggle:SetValue(getgenv().Config["Anti AFK"])
     end
-    
     if Solar.Options and Solar.Options.AutoRejoin and getgenv().Config["Auto Rejoin"] ~= nil then
         Solar.Options.AutoRejoin:SetValue(getgenv().Config["Auto Rejoin"])
     end
-    
     if Solar.Options and Solar.Options.MinimizeToggle and getgenv().Config["Show Minimize Button"] ~= nil then
         Solar.Options.MinimizeToggle:SetValue(getgenv().Config["Show Minimize Button"])
     end
@@ -807,15 +800,36 @@ end)
 
 local isSellingInProgress = false
 local harvestMode = "All"
+local harvestModes = {["All"] = true}
 
 Main1:AddDropdown("HarvestModeDropdown", {
-    Title = "Collect Mode",
+    Title = "Collect Modes",
     Description = "Select mutation fruits to collect",
     Values = {"All", "Only Moonlit", "Only Shocked"},
-    Default = "All",
-    Multi = false,
+    Default = {["All"] = true},
+    Multi = true,
     Callback = function(Value)
-        harvestMode = Value
+        harvestModes = Value
+        
+        local isAllSelected = Value["All"] or false
+        local isMoonlitSelected = Value["Only Moonlit"] or false
+        local isShockedSelected = Value["Only Shocked"] or false
+        
+        if isAllSelected then
+            harvestMode = "All"
+        elseif isMoonlitSelected and isShockedSelected then
+            harvestMode = "Moonlit_and_Shocked"
+        elseif isMoonlitSelected then
+            harvestMode = "Only Moonlit"
+        elseif isShockedSelected then
+            harvestMode = "Only Shocked"
+        else
+            harvestMode = "All"
+            if Solar.Options and Solar.Options.HarvestModeDropdown then
+                local newValue = {["All"] = true}
+                Solar.Options.HarvestModeDropdown:SetValue(newValue)
+            end
+        end
     end
 })
 
