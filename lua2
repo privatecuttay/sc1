@@ -798,16 +798,17 @@ end)
 
 local isSellingInProgress = false
 local harvestMode = "All"
-local selectedHarvestOptions = {["All"] = true}
+local selectedHarvestOptions = {}
 
 Main1:AddDropdown("HarvestModeDropdown", {
     Title = "Collect Modes",
     Description = "Select mutation fruits to collect",
     Values = {"All", "Only Moonlit", "Only Shocked"},
-    Default = {["All"] = true},
+    Default = {},
     Multi = true,
     Callback = function(Value)
         selectedHarvestOptions = Value
+        
         local hasSelection = false
         for _, isSelected in pairs(Value) do
             if isSelected then
