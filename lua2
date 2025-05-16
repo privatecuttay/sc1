@@ -1,4 +1,4 @@
-print("2")
+print("3")
 local Solar = loadstring(Game:HttpGet("https://raw.githubusercontent.com/HuynkKhoa1/SolarhubUI001/refs/heads/main/Custom_Solar.lua", true))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Th4nh1204/SaveManager.lua/refs/heads/main/Solar"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Th4nh1204/InterfaceManager.lua/refs/heads/main/Solar"))()
@@ -68,16 +68,18 @@ end
         Solar.Options.MinWeightSlider:SetValue(getgenv().Config["Min Weight"])
     end
     
-    -- Sửa phần xử lý Mutations
-if Solar.Options and Solar.Options.ModifierDropdown and getgenv().Config["Mutations"] then
-    local selectedMutations = {}
-    for mutationName, isSelected in pairs(getgenv().Config["Mutations"]) do
-        if isSelected then
-            table.insert(selectedMutations, mutationName) -- Thêm vào danh sách nếu = true
+    if Solar.Options and Solar.Options.ModifierDropdown and getgenv().Config["Mutations"] then
+        local selectedMutation = "Moonlit"
+        
+        for mutationName, isSelected in pairs(getgenv().Config["Mutations"]) do
+            if isSelected then
+                selectedMutation = mutationName
+                break
+            end
         end
+        
+        Solar.Options.ModifierDropdown:SetValue(selectedMutation)
     end
-    Solar.Options.ModifierDropdown:SetValue(selectedMutations) -- Truyền dạng array {"Moonlit", ...}
-end
     
     if getgenv().Config["Auto Buy Seeds"] then
         if Solar.Options and Solar.Options.AutoBuyLENGEN and getgenv().Config["Auto Buy Seeds"]["Legendary"] ~= nil then
@@ -1274,22 +1276,22 @@ local function autoFavoriteFruits()
     return favoriteCount, totalCount
 end
 
-local ModifierDropdown = Main2:AddDropdown("ModifierDropdown", {
-    Title = "Select Mutations",
-    Description = "Select mutations to favorite",
-    Values = modifiers,
-    Multi = true,
-    Default = {},
-})
+local modifiers = {"Gold", "Rainbow", "Wet", "Chilled", "Frozen", "Shocked", "Moonlit", "Chocolate"}
 
-ModifierDropdown:OnChanged(function(Value)
-    autoFavoriteConfig.selectedModifiers = {}
-    for modifierName, isSelected in pairs(Value) do
-        if isSelected then
-            table.insert(autoFavoriteConfig.selectedModifiers, modifierName)
+Main2:AddDropdown("ModifierDropdown", {
+    Title = "Select Mutation",
+    Description = "Select mutation to favorite",
+    Values = modifiers,
+    Default = "Moonlit",
+    Multi = false,
+    Callback = function(Value)
+        if Value == "Moonlit" then
+            autoFavoriteConfig.selectedModifiers = {}
+        else
+            autoFavoriteConfig.selectedModifiers = {Value}
         end
     end
-end)
+})
 
 Main2:AddSlider("MinWeightSlider", {
     Title = "Minimum Weight (KG)",
