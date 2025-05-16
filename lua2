@@ -1,1 +1,2414 @@
+local Solar = loadstring(Game:HttpGet("https://raw.githubusercontent.com/HuynkKhoa1/SolarhubUI001/refs/heads/main/Custom_Solar.lua", true))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Th4nh1204/SaveManager.lua/refs/heads/main/Solar"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Th4nh1204/InterfaceManager.lua/refs/heads/main/Solar"))()
 
+local Window = Solar:CreateWindow({
+    Title = "Grow A Garden",
+    SubTitle = "TUI CUT TAY BAN CUNG THE",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(540, 430),
+    Acrylic = true,
+    Theme = "Grape",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "carrot" }),
+    Shop = Window:AddTab({ Title = "Shop", Icon = "banana" }),
+    Event = Window:AddTab({ Title = "Event", Icon = "cherry" }),
+    Webhook = Window:AddTab({ Title = "Webhook", Icon = "apple" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+}
+local useCustomSeeds = false
+local customSeedsList = {}
+
+local function applyConfigFromGlobal()
+    if not getgenv().Config then return end
+    
+    if Solar.Options and Solar.Options.AutoPlantSeeds and getgenv().Config["Auto Plant"] ~= nil then
+        Solar.Options.AutoPlantSeeds:SetValue(getgenv().Config["Auto Plant"])
+    end
+    
+    if getgenv().Config and getgenv().Config["Plant Mode"] then
+    if Solar.Options and Solar.Options.PlantModeDropdown then
+        local selectedModes = {}
+        for mode, isSelected in pairs(getgenv().Config["Plant Mode"]) do
+            if isSelected and mode ~= "UseCustomSeeds" and mode ~= "CustomSeedsList" then
+                table.insert(selectedModes, mode)
+            end
+        end
+        Solar.Options.PlantModeDropdown:SetValue(selectedModes)
+    end
+    
+    useCustomSeeds = getgenv().Config["Plant Mode"]["UseCustomSeeds"] or false
+    
+    if getgenv().Config["Plant Mode"]["CustomSeedsList"] and type(getgenv().Config["Plant Mode"]["CustomSeedsList"]) == "table" then
+        customSeedsList = getgenv().Config["Plant Mode"]["CustomSeedsList"]
+    end
+end
+    
+    if Solar.Options and Solar.Options.AutoCollectSeeds and getgenv().Config["Auto Collect"] ~= nil then
+        Solar.Options.AutoCollectSeeds:SetValue(getgenv().Config["Auto Collect"])
+    end
+    
+    if Solar.Options and Solar.Options.HarvestModeDropdown and getgenv().Config["Collect Mode"] then
+        Solar.Options.HarvestModeDropdown:SetValue(getgenv().Config["Collect Mode"])
+    end
+    
+    if Solar.Options and Solar.Options.AutoSell and getgenv().Config["Auto Sell"] ~= nil then
+        Solar.Options.AutoSell:SetValue(getgenv().Config["Auto Sell"])
+    end
+    
+    if Solar.Options and Solar.Options.AutoFavoriteToggle and getgenv().Config["Auto Favorite"] ~= nil then
+        Solar.Options.AutoFavoriteToggle:SetValue(getgenv().Config["Auto Favorite"])
+    end
+    
+    if Solar.Options and Solar.Options.MinWeightSlider and getgenv().Config["Min Weight"] ~= nil then
+        Solar.Options.MinWeightSlider:SetValue(getgenv().Config["Min Weight"])
+    end
+    
+    if Solar.Options and Solar.Options.ModifierDropdown and getgenv().Config["Mutations"] then
+    if type(getgenv().Config["Mutations"]) == "table" then
+        local selectedMutations = {}
+        
+        for mutationName, isSelected in pairs(getgenv().Config["Mutations"]) do
+            if isSelected then
+                selectedMutations[mutationName] = true
+            end
+        end
+        
+        Solar.Options.ModifierDropdown:SetValue(selectedMutations)
+        end
+    end
+    
+    if getgenv().Config["Auto Buy Seeds"] then
+        if Solar.Options and Solar.Options.AutoBuyLENGEN and getgenv().Config["Auto Buy Seeds"]["Legendary"] ~= nil then
+            Solar.Options.AutoBuyLENGEN:SetValue(getgenv().Config["Auto Buy Seeds"]["Legendary"])
+        end
+        
+        if Solar.Options and Solar.Options.AutoBuyMYTH and getgenv().Config["Auto Buy Seeds"]["Mythical"] ~= nil then
+            Solar.Options.AutoBuyMYTH:SetValue(getgenv().Config["Auto Buy Seeds"]["Mythical"])
+        end
+        
+        if Solar.Options and Solar.Options.AutoBuyDIVINE and getgenv().Config["Auto Buy Seeds"]["Divine"] ~= nil then
+            Solar.Options.AutoBuyDIVINE:SetValue(getgenv().Config["Auto Buy Seeds"]["Divine"])
+        end
+    end
+    
+    if getgenv().Config["Webhook"] then
+        if Solar.Options and Solar.Options.EnableShecklesWebhook and getgenv().Config["Webhook"]["Enabled"] ~= nil then
+            Solar.Options.EnableShecklesWebhook:SetValue(getgenv().Config["Webhook"]["Enabled"])
+        end
+        
+        if getgenv().Config["Webhook"]["URL"] and getgenv().Config["Webhook"]["URL"] ~= "" then
+            shecklesWebhookConfig.url = getgenv().Config["Webhook"]["URL"]
+            
+            if Solar.Options and Solar.Options.ShecklesWebhookURL then
+                Solar.Options.ShecklesWebhookURL:SetValue(getgenv().Config["Webhook"]["URL"])
+            end
+        end
+        
+        if getgenv().Config["Webhook"]["UserID"] and getgenv().Config["Webhook"]["UserID"] ~= "" then
+            shecklesWebhookConfig.userId = getgenv().Config["Webhook"]["UserID"]
+            
+            if Solar.Options and Solar.Options.ShecklesWebhookUserID then
+                Solar.Options.ShecklesWebhookUserID:SetValue(getgenv().Config["Webhook"]["UserID"])
+            end
+        end
+        
+        if Solar.Options and Solar.Options.EnableShecklesWebhookPing and getgenv().Config["Webhook"]["Ping"] ~= nil then
+            Solar.Options.EnableShecklesWebhookPing:SetValue(getgenv().Config["Webhook"]["Ping"])
+        end
+        
+        if Solar.Options and Solar.Options.WebhookInterval and getgenv().Config["Webhook"]["Interval"] ~= nil then
+            Solar.Options.WebhookInterval:SetValue(getgenv().Config["Webhook"]["Interval"])
+        end
+    end
+    
+    if Solar.Options and Solar.Options.BlackScreenToggle and getgenv().Config["Black Screen"] ~= nil then
+        Solar.Options.BlackScreenToggle:SetValue(getgenv().Config["Black Screen"])
+    end
+    
+    if Solar.Options and Solar.Options.AntiAFKToggle and getgenv().Config["Anti AFK"] ~= nil then
+        Solar.Options.AntiAFKToggle:SetValue(getgenv().Config["Anti AFK"])
+    end
+    
+    if Solar.Options and Solar.Options.AutoRejoin and getgenv().Config["Auto Rejoin"] ~= nil then
+        Solar.Options.AutoRejoin:SetValue(getgenv().Config["Auto Rejoin"])
+    end
+    
+    if Solar.Options and Solar.Options.MinimizeToggle and getgenv().Config["Show Minimize Button"] ~= nil then
+        Solar.Options.MinimizeToggle:SetValue(getgenv().Config["Show Minimize Button"])
+    end
+end
+
+local Main0 = Tabs.Main:AddSection("Auto HatchEgg")
+local Main01 = Tabs.Main:AddSection("Auto Plant")
+local Main1 = Tabs.Main:AddSection("Auto Farm")
+local Main2 = Tabs.Main:AddSection("Auto Favorite")
+local Shop0 = Tabs.Shop:AddSection("Auto Egg")
+local Shop1 = Tabs.Shop:AddSection("Auto Buy")
+local Shop2 = Tabs.Shop:AddSection("Shop")
+local Shop3 = Tabs.Shop:AddSection("Shop Gear")
+local Event1 = Tabs.Event:AddSection("Lunar Event")
+local Webhook1 = Tabs.Webhook:AddSection("Webhook Setting")
+local Webhook2 = Tabs.Webhook:AddSection("Webhook")
+
+local autoRejoinEnabled = false
+local autoRejoinConnection = nil
+local function enableAutoRejoin()
+    if autoRejoinConnection then return end
+    autoRejoinEnabled = true
+    autoRejoinConnection = game:GetService("GuiService").ErrorMessageChanged:Connect(function()
+        local msg = game:GetService("GuiService"):GetErrorMessage()
+        if msg and msg ~= "" then            
+            task.wait(1)
+            if autoRejoinEnabled then
+                pcall(function()
+                    game:GetService("TeleportService"):Teleport(game.PlaceId)
+                end)
+            end
+        end
+    end)
+end
+
+local function disableAutoRejoin()
+    autoRejoinEnabled = false
+    if autoRejoinConnection then
+        autoRejoinConnection:Disconnect()
+        autoRejoinConnection = nil
+    end
+end
+
+local savedEggPositions = {}
+local savedPlayerCFrame = nil
+local autoCreateEggEnabled = false
+local autoCreateEggThread = nil
+local autoHatchPetEnabled = false
+local autoHatchPetThread = nil
+local selectedEggToEquip = ""
+local autoReequipThread = nil
+local positionMarker = nil
+local currentPositionIndex = 1
+local setPositionConfirmation = false
+local markerTimeout = nil
+local selectedEggs = {}
+local eggPriority = {"Bug Egg", "Night Egg", "Legendary Egg", "Rare Egg", "Uncommon Egg", "Common Egg"}
+
+local function unequipAllItems()
+    local player = game.Players.LocalPlayer
+    if not player or not player.Character then return end
+    for _, item in pairs(player.Character:GetChildren()) do
+        if item:IsA("Tool") then item.Parent = player.Backpack end
+    end
+end
+
+local function findHighestPriorityEgg(player)
+    if not player or not player.Backpack then return nil end
+    local availableEggs = {}
+    for _, eggName in ipairs(eggPriority) do
+        for _, selectedEgg in ipairs(selectedEggs) do
+            if selectedEgg == eggName then
+                table.insert(availableEggs, eggName)
+                break
+            end
+        end
+    end
+    for i, eggName in ipairs(availableEggs) do
+        for _, item in pairs(player.Backpack:GetChildren()) do
+            if item.Name == eggName or string.find(item.Name, eggName) then
+                return eggName
+            end
+        end
+    end
+    return nil
+end
+
+local function equipItemToHand(itemName)
+    local player = game.Players.LocalPlayer
+    if not player or not player.Backpack then return false end
+    unequipAllItems()
+    task.wait(0.1)
+    for _, item in pairs(player.Backpack:GetChildren()) do
+        if item.Name == itemName or string.find(item.Name, itemName) then
+            item.Parent = player.Character
+            return true
+        end
+    end
+    return false
+end
+
+local function createPositionMarker(position)
+    if positionMarker then positionMarker:Destroy() end
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local rightLeg = character:FindFirstChild("Right Leg") or character:FindFirstChild("RightLeg")
+    local leftLeg = character:FindFirstChild("Left Leg") or character:FindFirstChild("LeftLeg")
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    local floorY = position.Y - 3
+    if rightLeg and leftLeg then
+        local legY = math.min(rightLeg.Position.Y, leftLeg.Position.Y)
+        floorY = legY - rightLeg.Size.Y/2 - 0.05
+    elseif humanoidRootPart then
+        floorY = humanoidRootPart.Position.Y - 3
+    end
+    local floorPosition = Vector3.new(position.X, floorY, position.Z)
+    positionMarker = Instance.new("Part")
+    positionMarker.Name = "PositionMarker"
+    positionMarker.Anchored = true
+    positionMarker.CanCollide = false
+    positionMarker.Size = Vector3.new(1, 1, 1)
+    positionMarker.Position = floorPosition
+    positionMarker.Color = Color3.fromRGB(0, 255, 0)
+    positionMarker.Material = Enum.Material.Neon
+    positionMarker.Transparency = 0.3
+    positionMarker.Parent = workspace
+    if markerTimeout then task.cancel(markerTimeout) end
+    markerTimeout = task.spawn(function()
+        task.wait(5)
+        if positionMarker and positionMarker.Parent then
+            positionMarker:Destroy()
+            positionMarker = nil
+        end
+    end)
+    if savedPlayerCFrame then
+        savedPlayerCFrame = CFrame.new(
+            Vector3.new(savedPlayerCFrame.Position.X, floorY, savedPlayerCFrame.Position.Z),
+            Vector3.new(savedPlayerCFrame.Position.X + savedPlayerCFrame.LookVector.X,
+                        floorY + savedPlayerCFrame.LookVector.Y,
+                        savedPlayerCFrame.Position.Z + savedPlayerCFrame.LookVector.Z)
+        )
+    end
+    return floorPosition
+end
+
+local function startAutoReequip()
+    if autoReequipThread then task.cancel(autoReequipThread) end
+    if not selectedEggs or #selectedEggs == 0 then return end
+    autoReequipThread = task.spawn(function()
+        while autoCreateEggEnabled or autoHatchPetEnabled do
+            local player = game.Players.LocalPlayer
+            if player then
+                local bestEgg = findHighestPriorityEgg(player)
+                if bestEgg then
+                    local currentEquipped = false
+                    if selectedEggToEquip == bestEgg and player.Character then
+                        for _, item in pairs(player.Character:GetChildren()) do
+                            if item:IsA("Tool") and (item.Name == bestEgg or string.find(item.Name, bestEgg)) then
+                                currentEquipped = true
+                                break
+                            end
+                        end
+                    end
+                    if not currentEquipped then
+                        selectedEggToEquip = bestEgg
+                        pcall(function() equipItemToHand(selectedEggToEquip) end)
+                    end
+                end
+            end
+            task.wait(1)
+        end
+    end)
+end
+
+local function stopAutoReequip()
+    if autoReequipThread then
+        task.cancel(autoReequipThread)
+        autoReequipThread = nil
+    end
+end
+
+Main0:AddDropdown("EggEquipDropdown", {
+    Title = "Select Egg",
+    Values = {"Common Egg", "Uncommon Egg", "Rare Egg", "Legendary Egg", "Bug Egg", "Night Egg"},
+    Default = {},
+    Multi = true,
+    Callback = function(Value)
+        if not Value then
+            selectedEggs = {}
+            selectedEggToEquip = ""
+            stopAutoReequip()
+            return
+        end
+        selectedEggs = {}
+        for eggName, isSelected in pairs(Value) do
+            if isSelected then table.insert(selectedEggs, eggName) end
+        end
+        if #selectedEggs > 0 then
+            local bestEgg = findHighestPriorityEgg(game.Players.LocalPlayer)
+            if bestEgg then
+                selectedEggToEquip = bestEgg
+                equipItemToHand(selectedEggToEquip)
+            end
+            if autoCreateEggEnabled or autoHatchPetEnabled then startAutoReequip() end
+        else
+            selectedEggToEquip = ""
+            stopAutoReequip()
+        end
+    end
+})
+
+Main0:AddButton({
+    Title = "Set Position",
+    Description = "Set position for egg placement",
+    Callback = function()
+        if not setPositionConfirmation then
+            setPositionConfirmation = true
+            Solar:Notify({Title = "TUI CUT TAY BAN CUNG THE", Content = "Click again to set the position", Duration = 3})
+            task.spawn(function()
+                task.wait(5)
+                if setPositionConfirmation then setPositionConfirmation = false end
+            end)
+            return
+        end
+        setPositionConfirmation = false
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+        savedPlayerCFrame = humanoidRootPart.CFrame
+        local floorPosition = createPositionMarker(savedPlayerCFrame.Position)
+        savedEggPositions = {}
+        currentPositionIndex = 1
+        local eggSpacing = 3
+        local maxEggDistance = 30
+        local gridSize = math.floor(maxEggDistance / eggSpacing)
+        for x = 0, gridSize do
+            for z = 0, gridSize do
+                local newPosition = Vector3.new(
+                    floorPosition.X + x * eggSpacing,
+                    floorPosition.Y,
+                    floorPosition.Z + z * eggSpacing
+                )
+                local distance = (Vector3.new(newPosition.X, 0, newPosition.Z) - 
+                                 Vector3.new(floorPosition.X, 0, floorPosition.Z)).Magnitude
+                if distance <= maxEggDistance then
+                    table.insert(savedEggPositions, newPosition)
+                end
+            end
+        end
+    end
+})
+
+Main0:AddToggle("AutoCreateEgg", {
+    Title = "Auto Egg",
+    Default = false,
+}):OnChanged(function(state)
+    autoCreateEggEnabled = state
+    if state then
+        if not savedPlayerCFrame or #savedEggPositions == 0 then
+            Solar:Notify({Title = "TUI CUT TAY BAN CUNG THE", Content = "Set position first", Duration = 3})
+            if Solar.Options and Solar.Options.AutoCreateEgg then
+                Solar.Options.AutoCreateEgg:SetValue(false)
+            end
+            return
+        end
+        if #selectedEggs > 0 then startAutoReequip() end
+        if autoCreateEggThread then task.cancel(autoCreateEggThread) end
+        autoCreateEggThread = task.spawn(function()
+            while autoCreateEggEnabled do
+                if currentPositionIndex > #savedEggPositions then currentPositionIndex = 1 end
+                local targetPosition = savedEggPositions[currentPositionIndex]
+                local distance = (targetPosition - savedPlayerCFrame.Position).Magnitude
+                if distance <= 30 then
+                    pcall(function()
+                        game:GetService("ReplicatedStorage"):WaitForChild("GameEvents")
+                            :WaitForChild("PetEggService"):FireServer("CreateEgg", targetPosition)
+                    end)
+                end
+                currentPositionIndex = currentPositionIndex + 1
+                task.wait(0.5)
+            end
+        end)
+    else
+        if autoCreateEggThread then
+            task.cancel(autoCreateEggThread)
+            autoCreateEggThread = nil
+        end
+        if not autoHatchPetEnabled then stopAutoReequip() end
+    end
+end)
+
+Main0:AddToggle("AutoHatchPet", {
+    Title = "Auto Hatch Egg",
+    Default = false,
+}):OnChanged(function(state)
+    autoHatchPetEnabled = state
+    if state then
+        if #selectedEggs > 0 then startAutoReequip() end
+        if autoHatchPetThread then task.cancel(autoHatchPetThread) end
+        autoHatchPetThread = task.spawn(function()
+            while autoHatchPetEnabled do
+                local player = game.Players.LocalPlayer
+                local playerName = player.Name
+                local farmFound = false
+                for _, farmFolder in pairs(workspace.Farm:GetChildren()) do
+                    if farmFolder:FindFirstChild("Important") and 
+                       farmFolder.Important:FindFirstChild("Data") and
+                       farmFolder.Important.Data:FindFirstChild("Owner") and 
+                       farmFolder.Important.Data.Owner.Value == playerName then
+                        farmFound = true
+                        if farmFolder.Important:FindFirstChild("Objects_Physical") then
+                            local petEggs = {}
+                            for _, obj in pairs(farmFolder.Important.Objects_Physical:GetChildren()) do
+                                if obj.Name == "PetEgg" then table.insert(petEggs, obj) end
+                            end
+                            for _, petEgg in ipairs(petEggs) do
+                                pcall(function()
+                                    game:GetService("ReplicatedStorage"):WaitForChild("GameEvents")
+                                        :WaitForChild("PetEggService"):FireServer("HatchPet", petEgg)
+                                end)
+                                task.wait(1)
+                            end
+                        end
+                        break
+                    end
+                end
+                if not farmFound then
+                    if Solar.Options and Solar.Options.AutoHatchPet then
+                        Solar.Options.AutoHatchPet:SetValue(false)
+                    end
+                    break
+                end
+                task.wait(5)
+            end
+        end)
+    else
+        if autoHatchPetThread then
+            task.cancel(autoHatchPetThread)
+            autoHatchPetThread = nil
+        end
+        if not autoCreateEggEnabled then stopAutoReequip() end
+    end
+end)
+
+game:GetService("Players").LocalPlayer.CharacterRemoving:Connect(function()
+    if positionMarker and positionMarker.Parent then positionMarker:Destroy() end
+end)
+
+local autoPlantEnabled = false
+local autoPlantThread = nil
+local plantedPositions = {}
+local checkSeedsThread = nil
+
+local SeedsLEGEN2 = {"Watermelon", "Pumpkin", "Apple", "Bamboo"}
+local SeedsMYTH2 = {"Coconut", "Cactus", "DragonFruit", "Mango"}
+local SeedsDIVINE2 = {"Grape", "Mushroom", "Pepper", "Cacao"}
+
+local function findEquippedItem()
+    local player = game.Players.LocalPlayer
+    if not player then return nil end
+    
+    local playerName = player.Name
+    
+    if player.Character then
+        for _, item in pairs(player.Character:GetChildren()) do
+            if item:IsA("Tool") then return item end
+        end
+    end
+    
+    if workspace:FindFirstChild(playerName) then
+        local character = workspace[playerName]
+        for _, item in pairs(character:GetChildren()) do
+            if item:IsA("Tool") then return item end
+        end
+    end
+    
+    for _, obj in pairs(workspace:GetChildren()) do
+        if obj:IsA("Model") and obj:FindFirstChild("Humanoid") then
+            for _, item in pairs(obj:GetChildren()) do
+                if item:IsA("Tool") then return item end
+            end
+        end
+    end
+    
+    return nil
+end
+
+local selectedPlantMode = {}
+
+local function getSeedTypeFromName(seedName)
+    if not seedName then return "" end
+    local seedType = seedName:gsub(" Seed", ""):gsub("%[.*%]", ""):gsub("^%s*(.-)%s*$", "%1")
+    return seedType
+end
+
+local function findAllSeeds()
+    local player = game.Players.LocalPlayer
+    if not player or not player.Backpack then return {} end
+    
+    local seeds = {}
+    for _, item in pairs(player.Backpack:GetChildren()) do
+        if string.find(item.Name, "Seed") then
+            local baseSeedName = getSeedTypeFromName(item.Name)
+            local shouldAdd = false
+            
+            if useCustomSeeds and #customSeedsList > 0 then
+                for _, customSeed in ipairs(customSeedsList) do
+                    if baseSeedName == customSeed then
+                        shouldAdd = true
+                        break
+                    end
+                end
+            else
+                if #selectedPlantMode == 0 or table.find(selectedPlantMode, "All") then
+                    shouldAdd = true
+                else
+                    if table.find(selectedPlantMode, "Legendary Seeds") then
+                        for _, seedName in ipairs(SeedsLEGEN2) do
+                            if baseSeedName == seedName then
+                                shouldAdd = true
+                                break
+                            end
+                        end
+                    end
+                    
+                    if not shouldAdd and table.find(selectedPlantMode, "Mythical Seeds") then
+                        for _, seedName in ipairs(SeedsMYTH2) do
+                            if baseSeedName == seedName then
+                                shouldAdd = true
+                                break
+                            end
+                        end
+                    end
+                    
+                    if not shouldAdd and table.find(selectedPlantMode, "Divine Seeds") then
+                        for _, seedName in ipairs(SeedsDIVINE2) do
+                            if baseSeedName == seedName then
+                                shouldAdd = true
+                                break
+                            end
+                        end
+                    end
+                end
+            end
+            
+            if shouldAdd then
+                table.insert(seeds, item)
+            end
+        end
+    end
+    
+    return seeds
+end
+
+local function equipNextSeed()
+    local player = game.Players.LocalPlayer
+    if not player then return false end
+    
+    local currentItem = findEquippedItem()
+    if currentItem then
+        pcall(function() 
+            currentItem.Parent = player.Backpack 
+        end)
+        task.wait(0.1)
+    end
+    
+    local seeds = findAllSeeds()
+    if #seeds == 0 then return false end
+    
+    pcall(function() 
+        seeds[1].Parent = player.Character 
+    end)
+    return true
+end
+
+local function findAllCanPlant()
+    local canPlantPositions = {}
+    
+    for _, farmFolder in pairs(workspace.Farm:GetChildren()) do
+        if farmFolder.Name == "Farm" and farmFolder:FindFirstChild("Important") then
+            local important = farmFolder.Important
+            
+            if important:FindFirstChild("Data") and important.Data:FindFirstChild("Owner") then
+                local ownerValue = important.Data.Owner
+                local playerName = game.Players.LocalPlayer.Name
+                
+                if ownerValue.Value == playerName then
+                    if important:FindFirstChild("Plant_Locations") then
+                        local plantLocations = important.Plant_Locations
+                        
+                        for _, location in pairs(plantLocations:GetChildren()) do
+                            if location.Name == "Can_Plant" then
+                                local positionStr = tostring(location.Position)
+                                if not plantedPositions[positionStr] then
+                                    table.insert(canPlantPositions, location.Position)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    return canPlantPositions
+end
+
+local function plantSeedAtPosition(position, seedType)
+    if not position or not seedType or seedType == "" then return false end
+    
+    local args = {
+        vector.create(position.X, position.Y, position.Z),
+        seedType
+    }
+    
+    local success = pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("Plant_RE"):FireServer(unpack(args))
+    end)
+    
+    if success then
+        local positionStr = tostring(position)
+        plantedPositions[positionStr] = true
+        return true
+    end
+    
+    return false
+end
+
+local function plantAllPositionsWithCurrentSeed()
+    local currentSeed = findEquippedItem()
+    if not currentSeed or not string.find(currentSeed.Name, "Seed") then return false end
+    
+    local seedType = getSeedTypeFromName(currentSeed.Name)
+    local positions = findAllCanPlant()
+    
+    if #positions == 0 then return false end
+    
+    local planted = false
+    for _, position in ipairs(positions) do
+        planted = plantSeedAtPosition(position, seedType) or planted
+        task.wait(0.1)
+        
+        if not autoPlantEnabled then break end
+    end
+    
+    return planted
+end
+
+local startPlanting
+local checkForSeeds
+
+checkForSeeds = function()
+    if checkSeedsThread then task.cancel(checkSeedsThread) end
+    
+    checkSeedsThread = task.spawn(function()
+        while autoPlantEnabled do
+            local seeds = findAllSeeds()
+            if #seeds > 0 then
+                if startPlanting then
+                    startPlanting()
+                    break
+                end
+            end
+            task.wait(5)
+        end
+    end)
+end
+
+startPlanting = function()
+    if autoPlantThread then task.cancel(autoPlantThread) end
+    
+    plantedPositions = {}
+    
+    autoPlantThread = task.spawn(function()
+        while autoPlantEnabled do
+            local currentSeed = findEquippedItem()
+            
+            if not currentSeed or not string.find(currentSeed.Name, "Seed") then
+                local success = equipNextSeed()
+                if not success then
+                    if checkForSeeds then
+                        checkForSeeds()
+                    end
+                    break
+                end
+                task.wait(0.2)
+                currentSeed = findEquippedItem()
+            end
+            
+            local planted = plantAllPositionsWithCurrentSeed()
+            
+            if not planted then
+                local success = equipNextSeed()
+                if not success then
+                    if checkForSeeds then
+                        checkForSeeds()
+                    end
+                    break
+                end
+                task.wait(0.1)
+            else
+                plantedPositions = {}
+            end
+            
+            task.wait(0.5)
+        end
+    end)
+end
+
+local function startAutoPlant()
+    local seeds = findAllSeeds()
+    if #seeds > 0 then
+        startPlanting()
+    else
+        checkForSeeds()
+    end
+end
+
+local function stopAutoPlant()
+    autoPlantEnabled = false
+    
+    if autoPlantThread then
+        task.cancel(autoPlantThread)
+        autoPlantThread = nil
+    end
+    
+    if checkSeedsThread then
+        task.cancel(checkSeedsThread)
+        checkSeedsThread = nil
+    end
+end
+
+Main01:AddDropdown("PlantModeDropdown", {
+    Title = "Plant Mode",
+    Description = "Select seeds mode to plant",
+    Values = {"All", "Legendary Seeds", "Mythical Seeds", "Divine Seeds"},
+    Default = {"All"},
+    Multi = true,
+    Callback = function(Value)
+        selectedPlantMode = {}
+        for mode, isSelected in pairs(Value) do
+            if isSelected then
+                table.insert(selectedPlantMode, mode)
+            end
+        end
+        
+        if autoPlantEnabled then
+            stopAutoPlant()
+            autoPlantEnabled = true
+            startAutoPlant()
+        end
+    end
+})
+
+Main01:AddToggle("AutoPlantSeeds", {
+    Title = "Auto Plant Seeds",
+    Description = "Auto plant seeds in selected mode",
+    Default = false,
+}):OnChanged(function(state)
+    autoPlantEnabled = state
+    
+    if state then
+        startAutoPlant()
+    else
+        stopAutoPlant()
+    end
+end)
+
+local isSellingInProgress = false
+local harvestMode = "All"
+
+Main1:AddDropdown("HarvestModeDropdown", {
+    Title = "Collect Mode",
+    Description = "Select mutation fruits to collect",
+    Values = {"All", "Only Moonlit", "Only Shocked"},
+    Default = "All",
+    Multi = false,
+    Callback = function(Value)
+        harvestMode = Value
+    end
+})
+
+Main1:AddToggle("AutoCollectSeeds", {
+    Title = "Auto Collect Fruits",
+    Description = "Auto collect fruits in selected mode",
+    Default = false,
+}):OnChanged(function(state)
+    autoCollectSeedsEnabled = state
+    
+    if state then
+        if autoCollectSeedsThread then
+            task.cancel(autoCollectSeedsThread)
+        end
+        autoCollectSeedsThread = task.spawn(function()
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+            
+            local maxDistance = 15
+            
+            local function setNoclip(state)
+                for _, v in pairs(character:GetDescendants()) do
+                    if v:IsA("BasePart") then
+                        v.CanCollide = not state
+                    end
+                end
+            end
+            setNoclip(true)
+            
+            while autoCollectSeedsEnabled do
+                if not isSellingInProgress then
+                    local playerName = player.Name
+                    
+                    for _, farmFolder in pairs(workspace.Farm:GetChildren()) do
+                        local farmData = farmFolder.Important.Data
+                        
+                        if farmData.Owner.Value == playerName then
+                            local plantsPhysical = farmFolder.Important.Plants_Physical
+                            
+                            if harvestMode == "All" then
+                                for _, plantType in pairs(plantsPhysical:GetChildren()) do
+                                    if isSellingInProgress then break end
+                                    
+                                    local promptsInPlant = plantType:GetDescendants()
+                                    for _, prompt in ipairs(promptsInPlant) do
+                                        if isSellingInProgress then break end
+                                        
+                                        if prompt:IsA("ProximityPrompt") then
+                                            local promptPart = prompt.Parent
+                                            local targetPosition = promptPart.Position
+                                            
+                                            local distance = (targetPosition - humanoidRootPart.Position).Magnitude
+                                            
+                                            if distance <= maxDistance then
+                                                fireproximityprompt(prompt)
+                                                task.wait(0.1)
+                                            else
+                                                local direction = (targetPosition - humanoidRootPart.Position).Unit
+                                                local closePosition = targetPosition - direction * 5
+                                                
+                                                humanoidRootPart.CFrame = CFrame.new(closePosition, targetPosition)
+                                                task.wait(0.1)
+                                                
+                                                fireproximityprompt(prompt)
+                                                task.wait(0.1)
+                                            end
+                                        end
+                                    end
+                                end
+                            elseif harvestMode == "Only Moonlit" then 
+                                local moonlitFruits = {}
+                                for _, plantType in pairs(plantsPhysical:GetChildren()) do
+                                    local fruitsFolder = plantType:FindFirstChild("Fruits")
+                                    if fruitsFolder then
+                                        for _, fruit in pairs(fruitsFolder:GetChildren()) do
+                                            if fruit:GetAttribute("Moonlit") == true then
+                                                table.insert(moonlitFruits, {
+                                                    fruit = fruit,
+                                                    plantType = plantType
+                                                })
+                                            end
+                                        end
+                                    end
+                                end
+                                
+                                for _, info in ipairs(moonlitFruits) do
+                                    if isSellingInProgress then break end
+                                    
+                                    local fruit = info.fruit
+                                    local plantType = info.plantType
+                                    
+                                    local fruitPosition
+                                    if fruit:IsA("BasePart") then
+                                        fruitPosition = fruit.Position
+                                    else
+                                        local part = fruit:FindFirstChildWhichIsA("BasePart")
+                                        if part then
+                                            fruitPosition = part.Position
+                                        end
+                                    end
+                                    
+                                    if fruitPosition then
+                                        local nearestPrompt
+                                        local nearestDistance = math.huge
+                                        
+                                        for _, prompt in pairs(plantType:GetDescendants()) do
+                                            if prompt:IsA("ProximityPrompt") then
+                                                local promptPart = prompt.Parent
+                                                if promptPart and promptPart:IsA("BasePart") then
+                                                    local distance = (promptPart.Position - fruitPosition).Magnitude
+                                                    if distance < nearestDistance then
+                                                        nearestPrompt = prompt
+                                                        nearestDistance = distance
+                                                    end
+                                                end
+                                            end
+                                        end
+                                        
+                                        if nearestPrompt then
+                                            local promptPart = nearestPrompt.Parent
+                                            local targetPosition = promptPart.Position
+                                            
+                                            local distance = (targetPosition - humanoidRootPart.Position).Magnitude
+                                            if distance <= maxDistance then
+                                                fireproximityprompt(nearestPrompt)
+                                                task.wait(0.15)
+                                            else
+                                                local direction = (targetPosition - humanoidRootPart.Position).Unit
+                                                local closePosition = targetPosition - direction * 3
+                                                humanoidRootPart.CFrame = CFrame.new(closePosition, targetPosition)
+                                                task.wait(0.15)
+                                                fireproximityprompt(nearestPrompt)
+                                                task.wait(0.15)
+                                            end
+                                        end
+                                    end
+                                end
+                            elseif harvestMode == "Only Shocked" then
+                                local shockedFruits = {}
+                                for _, plantType in pairs(plantsPhysical:GetChildren()) do
+                                    local fruitsFolder = plantType:FindFirstChild("Fruits")
+                                    if fruitsFolder then
+                                        for _, fruit in pairs(fruitsFolder:GetChildren()) do
+                                            if fruit:GetAttribute("Shocked") == true then
+                                                table.insert(shockedFruits, {
+                                                    fruit = fruit,
+                                                    plantType = plantType
+                                                })
+                                            end
+                                        end
+                                    end
+                                end
+                                
+                                for _, info in ipairs(shockedFruits) do
+                                    if isSellingInProgress then break end
+                                    
+                                    local fruit = info.fruit
+                                    local plantType = info.plantType
+                                    
+                                    local fruitPosition
+                                    if fruit:IsA("BasePart") then
+                                        fruitPosition = fruit.Position
+                                    else
+                                        local part = fruit:FindFirstChildWhichIsA("BasePart")
+                                        if part then
+                                            fruitPosition = part.Position
+                                        end
+                                    end
+                                    
+                                    if fruitPosition then
+                                        local nearestPrompt
+                                        local nearestDistance = math.huge
+                                        
+                                        for _, prompt in pairs(plantType:GetDescendants()) do
+                                            if prompt:IsA("ProximityPrompt") then
+                                                local promptPart = prompt.Parent
+                                                if promptPart and promptPart:IsA("BasePart") then
+                                                    local distance = (promptPart.Position - fruitPosition).Magnitude
+                                                    if distance < nearestDistance then
+                                                        nearestPrompt = prompt
+                                                        nearestDistance = distance
+                                                    end
+                                                end
+                                            end
+                                        end
+                                        
+                                        if nearestPrompt then
+                                            local promptPart = nearestPrompt.Parent
+                                            local targetPosition = promptPart.Position
+                                            
+                                            local distance = (targetPosition - humanoidRootPart.Position).Magnitude
+                                            if distance <= maxDistance then
+                                                fireproximityprompt(nearestPrompt)
+                                                task.wait(0.15)
+                                            else
+                                                local direction = (targetPosition - humanoidRootPart.Position).Unit
+                                                local closePosition = targetPosition - direction * 3
+                                                humanoidRootPart.CFrame = CFrame.new(closePosition, targetPosition)
+                                                task.wait(0.15)
+                                                fireproximityprompt(nearestPrompt)
+                                                task.wait(0.15)
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                            
+                            break
+                        end
+                    end
+                end
+                
+                if isSellingInProgress then
+                    task.wait(0.5)
+                else
+                    task.wait(0.1)
+                end
+            end
+            
+            setNoclip(false)
+        end)
+    else
+        if autoCollectSeedsThread then
+            task.cancel(autoCollectSeedsThread)
+            autoCollectSeedsThread = nil
+        end
+    end
+end)
+
+local autoSellEnabled = false
+local autoSellThread = nil
+Main1:AddToggle("AutoSell", {
+    Title = "Auto Sell",
+    Description = "Auto sell inventory",
+    Default = false,
+}):OnChanged(function(state)
+    autoSellEnabled = state
+    
+    if state then
+        local player = game:GetService("Players").LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+        
+        if autoSellThread then
+            task.cancel(autoSellThread)
+        end
+        
+        autoSellThread = task.spawn(function()
+            while autoSellEnabled do
+                isSellingInProgress = true
+                
+                local sellPosition = CFrame.new(62.53701400756836, 2.999999761581421, 0.7606348395347595)
+                humanoidRootPart.CFrame = sellPosition
+                task.wait(0.2)
+                
+                local sellEvent = game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("Sell_Inventory")
+                sellEvent:FireServer()
+                
+                task.wait(0.5)
+                
+                local playerName = player.Name
+                local playerFarm = nil
+                
+                for _, farmFolder in pairs(workspace.Farm:GetChildren()) do
+                    if farmFolder:FindFirstChild("Important") and 
+                       farmFolder.Important:FindFirstChild("Data") and
+                       farmFolder.Important.Data:FindFirstChild("Owner") and 
+                       farmFolder.Important.Data.Owner.Value == playerName then
+                        playerFarm = farmFolder
+                        break
+                    end
+                end
+                
+                if playerFarm and playerFarm:FindFirstChild("PetArea") then
+                    local petArea = playerFarm.PetArea
+                    
+                    local petAreaCFrame = nil
+                    if petArea:IsA("BasePart") then
+                        petAreaCFrame = petArea.CFrame
+                    elseif petArea:IsA("Model") and petArea.PrimaryPart then
+                        petAreaCFrame = petArea.PrimaryPart.CFrame
+                    else
+                        for _, part in pairs(petArea:GetDescendants()) do
+                            if part:IsA("BasePart") then
+                                petAreaCFrame = part.CFrame
+                                break
+                            end
+                        end
+                    end
+                    
+                    if petAreaCFrame then
+                        humanoidRootPart.CFrame = petAreaCFrame + Vector3.new(0, 3, 0)
+                    end
+                end
+                
+                isSellingInProgress = false
+                task.wait(5)
+            end
+        end)
+    else
+        if autoSellThread then
+            task.cancel(autoSellThread)
+            autoSellThread = nil
+        end
+        isSellingInProgress = false
+    end
+end)
+
+local moonlitESPEnabled = false
+local moonlitESPThread = nil
+local espLabels = {}
+
+local ESPGui = Instance.new("ScreenGui")
+ESPGui.Name = "MoonlitESP"
+ESPGui.ResetOnSpawn = false
+ESPGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local success = pcall(function()
+    ESPGui.Parent = game:GetService("CoreGui")
+end)
+
+if not success then
+    ESPGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local moonlitColor = Color3.fromRGB(0, 255, 255)
+
+local function clearESP()
+    for _, label in pairs(espLabels) do
+        if label and label.Parent then
+            label:Destroy()
+        end
+    end
+    espLabels = {}
+end
+
+local function getInstancePosition(instance)
+    return pcall(function()
+        if instance:IsA("BasePart") then
+            return instance.Position
+        end
+        
+        if instance:IsA("Model") then
+            if instance.PrimaryPart then
+                return instance.PrimaryPart.Position
+            end
+            
+            for _, child in pairs(instance:GetDescendants()) do
+                if child:IsA("BasePart") then
+                    return child.Position
+                end
+            end
+        end
+        
+        for _, child in pairs(instance:GetChildren()) do
+            if child:IsA("BasePart") then
+                return child.Position
+            end
+        end
+        return nil
+    end)
+end
+
+local autoFavoriteConfig = {
+    enabled = false,
+    selectedModifiers = {},
+    minWeight = 0.2
+}
+
+local modifiers = {"Gold", "Rainbow", "Wet", "Chilled", "Frozen", "Shocked", "Moonlit", "Chocolate"}
+
+local function extractWeight(itemName)
+    local weightStr = itemName:match("%[([%d%.]+)kg%]")
+    if weightStr then
+        return tonumber(weightStr) or 0
+    end
+    return 0
+end
+
+local function matchesMultipleModifiers(itemName, selectedModifiers)
+    if #selectedModifiers == 0 then
+        return true
+    end
+    for _, modifier in ipairs(selectedModifiers) do
+        if string.find(itemName, modifier) then
+            return true
+        end
+    end
+    
+    return false
+end
+
+local function autoFavoriteFruits()
+    local player = game.Players.LocalPlayer
+    if not player then
+        return
+    end
+    
+    local backpack = player.Backpack
+    if not backpack then
+        return
+    end
+    
+    local favoriteCount = 0
+    local totalCount = 0
+    
+    for _, item in pairs(backpack:GetChildren()) do
+        local itemName = item.Name
+        
+        local weight = extractWeight(itemName)
+        local hasValidModifier = matchesMultipleModifiers(itemName, autoFavoriteConfig.selectedModifiers)
+        local hasValidWeight = (autoFavoriteConfig.minWeight == 0) or (weight >= autoFavoriteConfig.minWeight)
+        
+        if hasValidModifier and hasValidWeight then
+            totalCount = totalCount + 1
+            local currentState = item:GetAttribute("Favorite")
+            
+            if currentState ~= true then
+                local args = {
+                    item
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("Favorite_Item"):FireServer(unpack(args))
+                
+                favoriteCount = favoriteCount + 1
+                
+                task.wait(0.1)
+            end
+        end
+    end
+    
+    local character = player.Character
+    if character then
+        for _, item in pairs(character:GetChildren()) do
+            local itemName = item.Name
+            local weight = extractWeight(itemName)
+            local hasValidModifier = matchesMultipleModifiers(itemName, autoFavoriteConfig.selectedModifiers)
+            local hasValidWeight = (autoFavoriteConfig.minWeight == 0) or (weight >= autoFavoriteConfig.minWeight)
+            
+            if hasValidModifier and hasValidWeight then
+                totalCount = totalCount + 1
+                local currentState = item:GetAttribute("Favorite")
+                
+                if currentState ~= true then
+                    local args = {
+                        item
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("Favorite_Item"):FireServer(unpack(args))
+                    
+                    favoriteCount = favoriteCount + 1
+                    
+                    task.wait(0.1)
+                end
+            end
+        end
+    end
+    
+    return favoriteCount, totalCount
+end
+
+local ModifierDropdown = Main2:AddDropdown("ModifierDropdown", {
+    Title = "Select Mutations",
+    Description = "Select mutations to favorite",
+    Values = modifiers,
+    Multi = true,
+    Default = {},
+    Callback = function(Value)
+        autoFavoriteConfig.selectedModifiers = {}
+        for modifierName, isSelected in pairs(Value) do
+            if isSelected then
+                table.insert(autoFavoriteConfig.selectedModifiers, modifierName)
+            end
+        end
+    end
+})
+
+Main2:AddSlider("MinWeightSlider", {
+    Title = "Minimum Weight (KG)",
+    Description = "Only fruits above this weight",
+    Default = 0.1,
+    Min = 0.1,
+    Max = 30,
+    Rounding = 1,
+    Callback = function(Value)
+        autoFavoriteConfig.minWeight = Value
+        if autoFavoriteConfig.enabled then
+            pcall(autoFavoriteFruits)
+        end
+    end
+})
+
+local autoFavoriteThread = nil
+
+Main2:AddToggle("AutoFavoriteToggle", {
+    Title = "Auto Favorite Fruit",
+    Description = "Auto favorite fruits in selected mutations",
+    Default = false,
+    Callback = function(State)
+        autoFavoriteConfig.enabled = State
+        
+        if State then
+            pcall(autoFavoriteFruits)
+            if autoFavoriteThread then
+                task.cancel(autoFavoriteThread)
+            end
+            autoFavoriteThread = task.spawn(function()
+                while autoFavoriteConfig.enabled do
+                    pcall(autoFavoriteFruits)
+                    task.wait(1)
+                end
+            end)
+        else
+            if autoFavoriteThread then
+                task.cancel(autoFavoriteThread)
+                autoFavoriteThread = nil
+            end
+        end
+    end
+})
+
+local function unfavoriteFruits()
+    local player = game.Players.LocalPlayer
+    if not player then
+        return
+    end
+    
+    local backpack = player.Backpack
+    if not backpack then
+        return
+    end
+    
+    for _, item in pairs(backpack:GetChildren()) do
+        local itemName = item.Name
+        
+        local weight = extractWeight(itemName)
+        local hasValidModifier = matchesMultipleModifiers(itemName, autoFavoriteConfig.selectedModifiers)
+        local hasValidWeight = (autoFavoriteConfig.minWeight == 0) or (weight >= autoFavoriteConfig.minWeight)
+        
+        if hasValidModifier and hasValidWeight then
+            local currentState = item:GetAttribute("Favorite")
+            
+            if currentState == true then
+                local args = {
+                    item
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("Favorite_Item"):FireServer(unpack(args))
+                
+                task.wait(0.1)
+            end
+        end
+    end
+    
+    local character = player.Character
+    if character then
+        for _, item in pairs(character:GetChildren()) do
+            local itemName = item.Name
+            local weight = extractWeight(itemName)
+            local hasValidModifier = matchesMultipleModifiers(itemName, autoFavoriteConfig.selectedModifiers)
+            local hasValidWeight = (autoFavoriteConfig.minWeight == 0) or (weight >= autoFavoriteConfig.minWeight)
+            
+            if hasValidModifier and hasValidWeight then
+                local currentState = item:GetAttribute("Favorite")
+                
+                if currentState == true then
+                    local args = {
+                        item
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("Favorite_Item"):FireServer(unpack(args))
+                    
+                    task.wait(0.1)
+                end
+            end
+        end
+    end
+end
+
+Main2:AddButton({
+    Title = "Unfavorite Fruit",
+    Description = "Unfavorite fruits on selected mutations",
+    Callback = function()
+        unfavoriteFruits()
+    end
+})
+
+local CF1 = CFrame.new(-264.03924560546875, 2.797527551651001, 4.77034854888916)
+local CF2 = CFrame.new(-264.0312194824219, 2.797527551651001, 0.7403961420059204)
+local CF3 = CFrame.new(-264.041259765625, 2.8755276203155518, -3.269613742828369)
+
+local selectedEggTypes = {}
+
+local function checkAndBuyEggs()
+    if not workspace.NPCS or not workspace.NPCS["Pet Stand"] or not workspace.NPCS["Pet Stand"].EggLocations then return end
+    if #selectedEggTypes == 0 then return end
+    
+    local eggLocations = workspace.NPCS["Pet Stand"].EggLocations
+    local eggsBought = 0
+    
+    for _, eggModel in pairs(eggLocations:GetChildren()) do
+        if table.find(selectedEggTypes, eggModel.Name) then
+            local eggCFrame
+            
+            if eggModel:IsA("Model") and eggModel.PrimaryPart then
+                eggCFrame = eggModel.PrimaryPart.CFrame
+            elseif eggModel:IsA("BasePart") then
+                eggCFrame = eggModel.CFrame
+            else
+                local firstPart = eggModel:FindFirstChildWhichIsA("BasePart")
+                if firstPart then eggCFrame = firstPart.CFrame end
+            end
+            
+            if eggCFrame then
+                local eggPos = eggCFrame.Position
+                
+                if (eggPos - CF1.Position).Magnitude < 2 then
+                    game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("BuyPetEgg"):FireServer(2)
+                    eggsBought = eggsBought + 1
+                elseif (eggPos - CF2.Position).Magnitude < 2 then
+                    game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("BuyPetEgg"):FireServer(3)
+                    eggsBought = eggsBought + 1
+                elseif (eggPos - CF3.Position).Magnitude < 2 then
+                    game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("BuyPetEgg"):FireServer(1)
+                    eggsBought = eggsBought + 1
+                end
+            end
+        end
+    end
+    
+    return eggsBought
+end
+
+Shop0:AddDropdown("EggTypeDropdown", {
+    Title = "Select Egg",
+    Values = {"Common Egg", "Uncommon Egg", "Rare Egg", "Legendary Egg", "Bug Egg"},
+    Multi = true,
+    Default = {},
+    Callback = function(Value)
+        selectedEggTypes = {}
+        for eggType, isSelected in pairs(Value) do
+            if isSelected then
+                table.insert(selectedEggTypes, eggType)
+            end
+        end
+    end
+})
+
+local autoBuyEggsEnabled = false
+local autoBuyEggsThread = nil
+
+Shop0:AddToggle("AutoBuyEggs", {
+    Title = "Auto Buy Eggs",
+    Default = false,
+    Callback = function(state)
+        autoBuyEggsEnabled = state
+        
+        if state then
+            if #selectedEggTypes == 0 then
+                if Solar and Solar.Options and Solar.Options.AutoBuyEggs then
+                    Solar.Options.AutoBuyEggs:SetValue(false)
+                end
+                return
+            end
+            if autoBuyEggsThread then task.cancel(autoBuyEggsThread) end
+            autoBuyEggsThread = task.spawn(function()
+                while autoBuyEggsEnabled do
+                    checkAndBuyEggs()
+                    task.wait(5)
+                end
+            end)
+        else
+            if autoBuyEggsThread then
+                task.cancel(autoBuyEggsThread)
+                autoBuyEggsThread = nil
+            end
+        end
+    end
+})
+
+local shopSeeds = {"Carrot", "Strawberry", "Blueberry", "OrangeTulip", "Tomato", "Corn",
+"Daffodil", "Watermelon", "Pumpkin", "Apple", "Bamboo", "Coconut", "Cactus", "DragonFruit",
+"Mango", "Grape", "Mushroom", "Pepper", "Cacao"}
+
+local SeedsLENGEN = {"Watermelon", "Pumpkin", "Apple", "Bamboo"}
+local SeedsMYTH = {"Coconut", "Cactus", "DragonFruit", "Mango"}
+local SeedsDIVINE = {"Grape", "Mushroom", "Pepper", "Cacao"}
+local AutoLENGENE = false
+local AutoMYTH = false
+local AutoDIVINE = false
+
+Shop1:AddToggle("AutoBuyLENGEN", {
+    Title = "Auto Buy Legendary Seeds",
+    Default = false,
+}):OnChanged(function(state)
+    AutoLENGENE = state
+    if state then
+        task.spawn(function()
+            while state do
+                for _, seedName in ipairs(SeedsLENGEN) do
+                    if not AutoLENGENE then break end
+                    local args = {
+                        [1] = seedName
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("BuySeedStock"):FireServer(unpack(args))
+                    task.wait(0.2)
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+end)
+
+Shop1:AddToggle("AutoBuyMYTH", {
+    Title = "Auto Buy Mythical Seeds",
+    Default = false,
+}):OnChanged(function(state)
+    AutoMYTH = state
+    if state then
+        task.spawn(function()
+            while state do
+                for _, seedName in ipairs(SeedsMYTH) do
+                    if not AutoMYTH then break end
+                    local args = {
+                        [1] = seedName
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("BuySeedStock"):FireServer(unpack(args))
+                    task.wait(0.2)
+                end
+                task.wait(1)
+            end
+        end)
+    end
+end)
+
+Shop1:AddToggle("AutoBuyDIVINE", {
+    Title = "Auto Buy Divine Seeds",
+    Default = false,
+}):OnChanged(function(state)
+    AutoDIVINE = state
+    if state then
+        task.spawn(function()
+            while state do
+                for _, seedName in ipairs(SeedsDIVINE) do
+                    if not AutoDIVINE then break end
+                    local args = {
+                        [1] = seedName
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("BuySeedStock"):FireServer(unpack(args))
+                    task.wait(0.2)
+                end
+                task.wait(1)
+            end
+        end)
+    end
+end)
+
+Shop2:AddToggle("SeedShopToggle", {
+    Title = "Shop UI",
+    Default = false,
+}):OnChanged(function(state)
+    local player = game:GetService("Players").LocalPlayer    
+    if player.PlayerGui:FindFirstChild("Seed_Shop") then
+        player.PlayerGui:FindFirstChild("Seed_Shop").Enabled = state 
+    else
+    end
+end)
+
+local ItemDropdown = Shop2:AddDropdown("ItemDropdown", {
+    Title = "Select Seed",
+    Description = "Select seed to buy",
+    Values = shopSeeds,
+    Multi = true,
+    Default = {},
+})
+
+local selectedSeeds = {}
+
+ItemDropdown:OnChanged(function(Value)
+    selectedSeeds = {}
+    for seedName, State in next, Value do
+        if State then
+            table.insert(selectedSeeds, seedName)
+        end
+    end
+end)
+
+Shop2:AddToggle("AutoBuyShop", {
+    Title = "Auto Buy Seed",
+    Default = false,
+}):OnChanged(function(state)
+    if state then
+        task.spawn(function()
+            while state do
+                for _, seedName in ipairs(selectedSeeds) do
+                    local args = {
+                        [1] = seedName
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("BuySeedStock"):FireServer(unpack(args))
+                    task.wait(0.1)
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+end)
+
+Shop3:AddToggle("GearShopToggle", {
+    Title = "Gear Shop UI",
+    Default = false,
+}):OnChanged(function(state)
+    local player = game:GetService("Players").LocalPlayer
+    if player.PlayerGui:FindFirstChild("Gear_Shop") then
+        player.PlayerGui:FindFirstChild("Gear_Shop").Enabled = state 
+    else
+    end
+end)
+
+local gearShopItems = {"Watering Can", "Trowel", "Basic Sprinkler", "Advanced Sprinkler", "Godly Sprinkler", "Lightning Rod", "Master Sprinkler", "Favorite Tool"}
+
+local GearItemDropdown = Shop3:AddDropdown("GearItemDropdown", {
+    Title = "Select Gear",
+    Description = "Select gear to buy",
+    Values = gearShopItems,
+    Multi = true,
+    Default = {"Watering Can"},
+})
+
+local selectedGearItems = {}
+
+GearItemDropdown:OnChanged(function(Value)
+    selectedGearItems = {}
+    for gearName, State in next, Value do
+        if State then
+            table.insert(selectedGearItems, gearName)
+        end
+    end
+end)
+
+Shop3:AddToggle("AutoBuyGear", {
+    Title = "Auto Buy Gear",
+    Default = false,
+}):OnChanged(function(state)
+    if state then
+        task.spawn(function()
+            while state do
+                for _, gearName in ipairs(selectedGearItems) do
+                    local args = {
+                        [1] = gearName
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("BuyGearStock"):FireServer(unpack(args))
+                    task.wait(0.1)
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+end)
+
+Event1:AddToggle("NightQuestToggle", {
+    Title = "Lunar UI",
+    Default = false,
+}):OnChanged(function(state)
+    local player = game:GetService("Players").LocalPlayer    
+    if player.PlayerGui:FindFirstChild("NightQuest_UI") then
+        player.PlayerGui:FindFirstChild("NightQuest_UI").Enabled = state 
+    else
+    end
+end)
+
+Event1:AddToggle("MoonlitESP", {
+    Title = "Moonlit ESP",
+    Default = false,
+    Callback = function(state)
+        moonlitESPEnabled = state
+        
+        if state then
+            if moonlitESPThread then
+                task.cancel(moonlitESPThread)
+            end
+            
+            clearESP()
+            
+            moonlitESPThread = task.spawn(function()
+                while moonlitESPEnabled do
+                    local player = game.Players.LocalPlayer
+                    local character = player.Character or player.CharacterAdded:Wait()
+                    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+                    local camera = workspace.CurrentCamera
+                    
+                    local newLabels = {}
+                    
+                    if workspace:FindFirstChild("Farm") then
+                        for _, farmFolder in pairs(workspace.Farm:GetChildren()) do
+                            if farmFolder:FindFirstChild("Important") and farmFolder.Important:FindFirstChild("Plants_Physical") then
+                                local plantsPhysical = farmFolder.Important.Plants_Physical
+                                
+                                for _, plantType in pairs(plantsPhysical:GetChildren()) do
+                                    if plantType:FindFirstChild("Fruits") then
+                                        for _, fruit in pairs(plantType.Fruits:GetChildren()) do
+                                            if fruit:GetAttribute("Moonlit") then
+                                                local success, fruitPosition = getInstancePosition(fruit)
+                                                
+                                                if success and fruitPosition then
+                                                    local distance = (fruitPosition - humanoidRootPart.Position).Magnitude
+                                                    
+                                                    local screenPosition, onScreen = camera:WorldToScreenPoint(fruitPosition)
+                                                    
+                                                    table.insert(newLabels, {
+                                                        name = fruit.Name,
+                                                        distance = distance,
+                                                        position = screenPosition,
+                                                        visible = onScreen
+                                                    })
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    
+                    for i, info in ipairs(newLabels) do
+                        local label
+                        
+                        if i <= #espLabels and espLabels[i] and espLabels[i].Parent then
+                            label = espLabels[i]
+                        else
+                            label = Instance.new("TextLabel")
+                            label.BackgroundTransparency = 1
+                            label.Size = UDim2.new(0, 200, 0, 30)
+                            label.Font = Enum.Font.GothamSemibold
+                            label.TextSize = 14
+                            label.TextStrokeTransparency = 0.3
+                            label.TextStrokeColor3 = Color3.new(0, 0, 0)
+                            label.TextColor3 = moonlitColor
+                            label.Parent = ESPGui
+                            
+                            if i > #espLabels then
+                                table.insert(espLabels, label)
+                            else
+                                espLabels[i] = label
+                            end
+                        end
+                        
+                        local distanceText = tostring(math.floor(info.distance))
+                        label.Text = info.name .. " [" .. distanceText .. "]"
+                        label.Position = UDim2.new(0, info.position.X - label.Size.X.Offset / 2, 0, info.position.Y - 40)
+                        label.Visible = info.visible
+                    end
+                    
+                    for i = #newLabels + 1, #espLabels do
+                        if espLabels[i] and espLabels[i].Parent then
+                            espLabels[i].Visible = false
+                        end
+                    end
+                        task.wait(0.016)
+                end
+            end)
+        else
+            if moonlitESPThread then
+                task.cancel(moonlitESPThread)
+                moonlitESPThread = nil
+            end
+            
+            clearESP()
+        end
+    end
+})
+
+Event1:AddButton({
+    Title = "Submit Fruit Holding",
+    Callback = function()
+        local args = {
+            "SubmitHeldPlant"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("NightQuestRemoteEvent"):FireServer(unpack(args))
+    end
+})
+
+Event1:AddToggle("SubmitAllPlantsToggle", {
+    Title = "Auto Submit All Fruits",
+    Default = false,
+    Callback = function(State)
+        if State then
+            if submitAllPlantsThread then
+                task.cancel(submitAllPlantsThread)
+            end
+            submitAllPlantsThread = task.spawn(function()
+                while true do
+                    local args = {
+                        "SubmitAllPlants"
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("NightQuestRemoteEvent"):FireServer(unpack(args))
+                    task.wait(5)
+                end
+            end)
+        else
+            if submitAllPlantsThread then
+                task.cancel(submitAllPlantsThread)
+                submitAllPlantsThread = nil
+            end
+        end
+    end
+})
+
+local DEFAULT_WEBHOOK_URL = "https://discord.com/api/webhooks/1371670855179829379/Z9bhAizsP82u4tvISGIDOVJnAScxF_jPJ_AG_9d21dspqONIWeGxKOQENYViZTbt_eJt"
+local shecklesWebhookConfig = {
+    url = DEFAULT_WEBHOOK_URL,
+    userId = "",
+    pingEnabled = false,
+    enabled = false,
+    interval = 5
+}
+
+local shecklesWebhookThread = nil
+local lastShecklesValue = 0
+Webhook1:AddInput("ShecklesWebhookURL", {
+    Title = "Webhook URL",
+    Default = "",
+    Placeholder = "https://discord.com/api/webhooks",
+    Numeric = false,
+    Finished = true,
+    Callback = function(value)
+        if value and value ~= "" then
+            shecklesWebhookConfig.url = value
+        else
+            shecklesWebhookConfig.url = DEFAULT_WEBHOOK_URL
+        end
+    end
+})
+
+Webhook1:AddInput("ShecklesWebhookUserID", {
+    Title = "Discord User ID",
+    Default = shecklesWebhookConfig.userId,
+    Placeholder = "123456789",
+    Numeric = true,
+    Finished = true,
+    Callback = function(value)
+        shecklesWebhookConfig.userId = value
+    end
+})
+
+local function sendShecklesWebhook(data)
+    local webhookUrl = shecklesWebhookConfig.url
+    if webhookUrl == "" or webhookUrl == nil then
+        webhookUrl = DEFAULT_WEBHOOK_URL
+    end
+    
+    if shecklesWebhookConfig.pingEnabled then
+        if shecklesWebhookConfig.userId == "" then
+            data["content"] = "@everyone"
+        else
+            data["content"] = "<@" .. shecklesWebhookConfig.userId .. ">"
+        end
+    end
+    
+    local HttpService = game:GetService("HttpService")
+    local jsonData = HttpService:JSONEncode(data)
+    
+    local success = false
+    
+    if syn and syn.request then
+        success = pcall(function()
+            syn.request({
+                Url = webhookUrl,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = jsonData
+            })
+        end)
+    end
+    if not success and request then
+        success = pcall(function()
+            request({
+                Url = webhookUrl,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = jsonData
+            })
+        end)
+    end
+    if not success and http and http.request then
+        success = pcall(function()
+            http.request({
+                Url = webhookUrl,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = jsonData
+            })
+        end)
+    end
+    if not success and http_request then
+        success = pcall(function()
+            http_request({
+                Url = webhookUrl,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = jsonData
+            })
+        end)
+    end
+end
+
+local function getMoonlitFruits()
+    local player = game.Players.LocalPlayer
+    if not player then return {} end
+    
+    local fruitCounts = {}
+    
+    local function getBaseFruitName(itemName)
+        local baseName = itemName:gsub("%[%d+%.?%d*kg%]", "")
+        
+        local baseNameWithoutModifiers = baseName
+        
+        local variants = {"Moonlit", "Shocked", "Rainbow", "Gold", "Chocolate", "Wet", "Chilled", "Frozen"}
+        for _, variant in ipairs(variants) do
+            baseNameWithoutModifiers = baseNameWithoutModifiers:gsub("%[" .. variant .. ".-]", "")
+        end
+        
+        baseNameWithoutModifiers = baseNameWithoutModifiers:gsub("^%s+", ""):gsub("%s+$", ""):gsub("%s+", " ")
+        
+        return baseNameWithoutModifiers, baseName
+    end
+    
+    for _, container in pairs({player.Backpack, player.Character}) do
+        if container then
+            for _, item in pairs(container:GetChildren()) do
+                local itemName = item.Name
+                
+                if string.match(itemName, "%[.-Moonlit.-]") then
+                    local baseName, displayName = getBaseFruitName(itemName)
+                    
+                    local modifiers = {}
+                    for variant in itemName:gmatch("%[([^%]]+)%]") do
+                        if not string.match(variant, "%d+%.?%d*kg") then
+                            table.insert(modifiers, variant)
+                        end
+                    end
+                    
+                    local fullName = itemName:gsub("%[%d+%.?%d*kg%]", ""):gsub("^%s+", ""):gsub("%s+$", "")
+                    
+                    if not fruitCounts[fullName] then
+                        fruitCounts[fullName] = 0
+                    end
+                    
+                    fruitCounts[fullName] = fruitCounts[fullName] + 1
+                end
+            end
+        end
+    end
+    
+    local result = {}
+    for fruitName, count in pairs(fruitCounts) do
+        if count > 1 then
+            table.insert(result, "x" .. count .. " " .. fruitName)
+        else
+            table.insert(result, fruitName)
+        end
+    end
+    
+    table.sort(result)
+    
+    return result
+end
+
+Webhook1:AddSlider("WebhookInterval", {
+    Title = "Webhook Delay (minutes)",
+    Default = 5,
+    Min = 1,
+    Max = 60,
+    Rounding = 0,
+    Callback = function(value)
+        shecklesWebhookConfig.interval = value
+    end
+})
+
+Webhook2:AddButton({
+    Title = "Test Webhook",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        if not player then return end
+        
+        local data = {
+            ["embeds"] = {{
+                ["title"] = "Grow a Garden",
+                ["description"] = "Test Webhook",
+                ["color"] = 10181046,
+                ["footer"] = {
+                    ["text"] = "TUI CUT TAY BAN CUNG THE • " .. os.date("%I:%M %p")
+                }
+            }}
+        }
+        
+        pcall(function()
+            sendShecklesWebhook(data)
+        end)
+    end
+})
+
+Webhook1:AddToggle("EnableShecklesWebhook", {
+    Title = "Enable Webhook",
+    Default = false,
+    Callback = function(state)
+        shecklesWebhookConfig.enabled = state
+        
+        if state then
+            if shecklesWebhookThread then
+                task.cancel(shecklesWebhookThread)
+            end
+            
+            local player = game.Players.LocalPlayer
+            if player and player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Sheckles") then
+                lastShecklesValue = player.leaderstats.Sheckles.Value
+            else
+                lastShecklesValue = 0
+            end
+            
+            shecklesWebhookThread = task.spawn(function()
+                while shecklesWebhookConfig.enabled do
+                    pcall(function()
+                        local player = game.Players.LocalPlayer
+                        if not player then return end
+                        
+                        if player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Sheckles") then
+                            local currentSheckles = player.leaderstats.Sheckles.Value
+                            
+                            if lastShecklesValue == nil then
+                                lastShecklesValue = currentSheckles
+                            end
+                            
+                            local difference = currentSheckles - lastShecklesValue
+                            
+                            if type(difference) ~= "number" then
+                                difference = 0
+                            end
+                            
+                            local formattedCurrentSheckles = tostring(currentSheckles):reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", "")
+                            local formattedDifference = tostring(math.abs(difference)):reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", "")
+                            
+                            local diffPrefix = ""
+                            if difference > 0 then
+                                diffPrefix = "+"
+                            elseif difference < 0 then
+                                diffPrefix = "-"
+                            end
+                            
+                            local moonlitFruits = getMoonlitFruits()
+                            local moonlitText = "None"
+
+                            if #moonlitFruits > 0 then
+                                moonlitText = table.concat(moonlitFruits, "\n")
+                            end
+
+                            local data = {
+                                ["embeds"] = {{
+                                    ["title"] = "Grow a Garden",
+                                    ["color"] = 10181046,
+                                    ["fields"] = {
+                                        {
+                                            ["name"] = "Username: || " .. player.Name .. " ||",
+                                            ["value"] = "",
+                                            ["inline"] = false
+                                        },
+                                        {
+                                            ["name"] = "💰 Total Cash",
+                                            ["value"] = formattedCurrentSheckles,
+                                            ["inline"] = true
+                                        },
+                                        {
+                                            ["name"] = "💰 Earned Cash",
+                                            ["value"] = diffPrefix .. formattedDifference,
+                                            ["inline"] = true
+                                        },
+                                        {
+                                            ["name"] = "🌙 Moonlit Mutations Fruits",
+                                            ["value"] = moonlitText,
+                                            ["inline"] = false
+                                        },
+                                    },
+                                    ["footer"] = {
+                                        ["text"] = "TUI CUT TAY BAN CUNG THE • " .. os.date("%I:%M %p")
+                                    }
+                                }}
+                            }
+                            
+                            sendShecklesWebhook(data)
+                            
+                            lastShecklesValue = currentSheckles
+                        end
+                    end)
+                    
+                    local waitTime = shecklesWebhookConfig.interval * 60
+                    task.wait(waitTime)
+                end
+            end)
+        else
+            if shecklesWebhookThread then
+                task.cancel(shecklesWebhookThread)
+                shecklesWebhookThread = nil
+            end
+        end
+    end
+})
+
+Webhook2:AddToggle("EnableShecklesWebhookPing", {
+    Title = "Webhook Ping",
+    Description = "Enbale Ping Everyone/ID Discord",
+    Default = false,
+    Callback = function(state)
+        shecklesWebhookConfig.pingEnabled = state
+    end
+})
+
+Tabs.Settings:AddToggle("AutoRejoin", {
+    Title = "Auto Rejoin",
+    Description = "Auto rejoin when disconnect",
+    Default = false,
+    Callback = function(state)
+        if state then
+            enableAutoRejoin()
+        else
+            disableAutoRejoin()
+        end
+    end
+})
+
+Tabs.Settings:AddToggle("BlackScreenToggle", {
+    Title = "Black Screen",
+    Default = false,
+}):OnChanged(function(state)
+    local blackScreenEnabled = state
+    local player = game:GetService("Players").LocalPlayer
+    
+    if game:GetService("CoreGui"):FindFirstChild("BlackScreenOverlay") then
+        game:GetService("CoreGui"):FindFirstChild("BlackScreenOverlay"):Destroy()
+    end
+    
+    if player:FindFirstChild("PlayerGui"):FindFirstChild("BlackScreenOverlay") then
+        player:FindFirstChild("PlayerGui"):FindFirstChild("BlackScreenOverlay"):Destroy()
+    end
+    
+    if blackScreenEnabled then
+        local blackScreenGui = Instance.new("ScreenGui")
+        blackScreenGui.Name = "BlackScreenOverlay"
+        blackScreenGui.ResetOnSpawn = false
+        blackScreenGui.DisplayOrder = 0
+        blackScreenGui.IgnoreGuiInset = true
+        
+        local success = pcall(function()
+            blackScreenGui.Parent = game:GetService("CoreGui")
+        end)
+        
+        if not success then
+            blackScreenGui.Parent = player:WaitForChild("PlayerGui")
+        end
+        
+        local frame = Instance.new("Frame")
+        frame.Name = "BlackFrame"
+        frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        frame.BorderSizePixel = 0
+        frame.Position = UDim2.new(0, 0, 0, 0)
+        frame.Size = UDim2.new(1, 0, 1, 0)
+        frame.ZIndex = 0
+        frame.Parent = blackScreenGui
+        
+        local hubText = Instance.new("TextLabel")
+        hubText.BackgroundTransparency = 1
+        hubText.Font = Enum.Font.GothamBold
+        hubText.Text = "TUI CUT TAY BAN CUNG THE"
+        hubText.TextColor3 = Color3.fromRGB(255, 255, 255)
+        hubText.TextSize = 40
+        hubText.Position = useLogoOption and UDim2.new(0.5, 0, 0.5, 20) or UDim2.new(0.5, 0, 0.45, 0)
+        hubText.AnchorPoint = Vector2.new(0.5, 0.5)
+        hubText.Size = UDim2.new(0, 300, 0, 50)
+        hubText.ZIndex = 2
+        hubText.Parent = blackScreenGui
+        
+        local toggleButton = Instance.new("TextButton")
+        toggleButton.Name = "DisableButton"
+        toggleButton.Size = UDim2.new(0, 220, 0, 45)
+        toggleButton.Position = UDim2.new(0.5, 0, 0.08, 0)
+        toggleButton.AnchorPoint = Vector2.new(0.5, 0)
+        toggleButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        toggleButton.BorderSizePixel = 0
+        toggleButton.Font = Enum.Font.GothamBold
+        toggleButton.Text = "DISABLE BLACK SCREEN"
+        toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        toggleButton.TextSize = 16
+        toggleButton.ZIndex = 10
+        toggleButton.Parent = blackScreenGui
+        
+        local buttonCorner = Instance.new("UICorner")
+        buttonCorner.CornerRadius = UDim.new(0, 8)
+        buttonCorner.Parent = toggleButton
+        
+        local buttonStroke = Instance.new("UIStroke")
+        buttonStroke.Color = Color3.fromRGB(255, 80, 80)
+        buttonStroke.Thickness = 2
+        buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        buttonStroke.Parent = toggleButton
+        
+        local shadowFrame = Instance.new("Frame")
+        shadowFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        shadowFrame.BorderSizePixel = 0
+        shadowFrame.Size = UDim2.new(1, 0, 1, 0)
+        shadowFrame.Position = UDim2.new(0, 0, 0, 2)
+        shadowFrame.ZIndex = 9
+        shadowFrame.Parent = toggleButton
+        
+        local shadowCorner = Instance.new("UICorner")
+        shadowCorner.CornerRadius = UDim.new(0, 8)
+        shadowCorner.Parent = shadowFrame
+        
+        toggleButton.MouseEnter:Connect(function()
+            toggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        end)
+        
+        toggleButton.MouseLeave:Connect(function()
+            toggleButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        end)
+        
+        toggleButton.MouseButton1Click:Connect(function()
+            blackScreenGui:Destroy()
+            
+            pcall(function()
+                if Solar and Solar.Options and Solar.Options.BlackScreenToggle then
+                    Solar.Options.BlackScreenToggle:SetValue(false)
+                end
+            end)
+        end)
+        
+        game:GetService("RunService").RenderStepped:Connect(function()
+            if not blackScreenGui or not blackScreenGui.Parent then
+                return
+            end
+            
+            if blackScreenGui.DisplayOrder ~= 0 then
+                blackScreenGui.DisplayOrder = 0
+            end
+            
+            for _, guiObject in pairs(game:GetService("CoreGui"):GetChildren()) do
+                if guiObject:IsA("ScreenGui") and guiObject ~= blackScreenGui then
+                    if guiObject.DisplayOrder < 10 then
+                        guiObject.DisplayOrder = 10
+                    end
+                end
+            end
+            
+            for _, guiObject in pairs(player.PlayerGui:GetChildren()) do
+                if guiObject:IsA("ScreenGui") and guiObject ~= blackScreenGui then
+                    if guiObject.DisplayOrder < 10 then
+                        guiObject.DisplayOrder = 10
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+local autoExecuteEnabled = false
+local hiddenUI = game:GetService("CoreGui")
+
+local function saveAutoExecFlag()
+    if hiddenUI:FindFirstChild("SolarHub_AutoExec") then
+        hiddenUI:FindFirstChild("SolarHub_AutoExec"):Destroy()
+    end
+    
+    local flagGui = Instance.new("ScreenGui")
+    flagGui.Name = "SolarHub_AutoExec"
+    flagGui.ResetOnSpawn = false
+    flagGui.Enabled = false
+    
+    local statusFlag = Instance.new("BoolValue")
+    statusFlag.Name = "Enabled"
+    statusFlag.Value = true
+    statusFlag.Parent = flagGui
+    
+    local scriptUrl = Instance.new("StringValue")
+    scriptUrl.Name = "ScriptURL"
+    scriptUrl.Value = "https://raw.githubusercontent.com/privatecuttay/sc1/main/lua"
+    scriptUrl.Parent = flagGui
+    
+    pcall(function()
+        flagGui.Parent = hiddenUI
+    end)
+end
+
+if _G.SolarHubInitialized == nil then
+    _G.SolarHubInitialized = true
+    _G.SolarHubExecuted = false
+end
+
+Tabs.Settings:AddToggle("AutoExecuteToggle", {
+    Title = "Auto Execute",
+    Default = false,
+}):OnChanged(function(state)
+    autoExecuteEnabled = state
+
+    if state then
+        saveAutoExecFlag()
+        if queue_on_teleport then
+            queue_on_teleport([[
+                if not _G.SolarHubExecuted then
+                    _G.SolarHubExecuted = true
+                    task.spawn(function()
+                        repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
+                        loadstring(game:HttpGet("https://raw.githubusercontent.com/privatecuttay/sc1/main/lua"))()
+                    end)
+                end
+            ]])
+        end
+    else
+        if hiddenUI then
+            local gui = hiddenUI:FindFirstChild("SolarHub_AutoExec")
+            if gui then
+                gui:Destroy()
+            end
+        end
+        _G.SolarHubExecuted = false
+    end
+end)
+
+local function initAutoExecute()
+    if _G.SolarHubExecuted then
+        return
+    end
+
+    local existingFlag = hiddenUI:FindFirstChild("SolarHub_AutoExec")
+    if existingFlag then
+        local enabledValue = false
+        pcall(function()
+            if existingFlag:FindFirstChild("Enabled") then
+                local enabledInstance = existingFlag:FindFirstChild("Enabled")
+                if enabledInstance:IsA("BoolValue") then
+                    enabledValue = enabledInstance.Value
+                end
+            elseif existingFlag:GetAttribute("Enabled") ~= nil then
+                enabledValue = existingFlag:GetAttribute("Enabled")
+            end
+        end)
+        if enabledValue == true then
+            task.wait(1)
+            if Solar.Options and Solar.Options.AutoExecuteToggle then
+                Solar.Options.AutoExecuteToggle:SetValue(true)
+            end
+        end
+    end
+end
+Tabs.Settings:AddToggle("AntiAFKToggle", {
+    Title = "Anti AFK",
+    Default = true,
+    Callback = function(State)
+        if State then
+            if _G.AntiAFKThread then
+                task.cancel(_G.AntiAFKThread)
+            end
+            _G.AntiAFKThread = task.spawn(function()
+                local VirtualUser = game:GetService("VirtualUser")
+                while true do
+                    VirtualUser:CaptureController()
+                    VirtualUser:ClickButton2(Vector2.new())
+                    task.wait(300)
+                end
+            end)
+        else
+            if _G.AntiAFKThread then
+                task.cancel(_G.AntiAFKThread)
+                _G.AntiAFKThread = nil
+            end
+        end
+    end
+})
+
+Tabs.Settings:AddToggle("MinimizeToggle", {
+    Title = "Toggle Minimize Button",
+    Default = true,
+}):OnChanged(function(state)
+    Solar.Minimizer.Visible = state
+end)
+--=====
+--====== SAVE & LOAD CONFIG ======
+SaveManager:SetLibrary(Solar)
+InterfaceManager:SetLibrary(Solar)
+
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:SetFolder("CUTTAY")
+SaveManager:SetFolder("CUTTAY/PlantNoLife")
+
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+Window:SelectTab(1)
+SaveManager:LoadAutoloadConfig()
+task.wait(1)
+applyConfigFromGlobal()
+task.spawn(initAutoExecute)
