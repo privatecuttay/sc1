@@ -69,18 +69,17 @@ local function applyConfigFromGlobal()
     end
     
     if Solar.Options and Solar.Options.ModifierDropdown and getgenv().Config["Mutations"] then
-    print("Config Mutations:", getgenv().Config["Mutations"])
+    -- KHÔNG gọi SetValue ngay lập tức
     
-    Solar.Options.ModifierDropdown:SetValue(getgenv().Config["Mutations"])
-    
-    autoFavoriteConfig.selectedModifiers = {}
-    for modifierName, State in pairs(getgenv().Config["Mutations"]) do
-        if State == true then
-            table.insert(autoFavoriteConfig.selectedModifiers, modifierName)
-        end
+    -- Xử lý trước dữ liệu trong config
+    local mutationValues = {}
+    for modifierName, isEnabled in pairs(getgenv().Config["Mutations"]) do
+        mutationValues[modifierName] = isEnabled -- chỉ copy giá trị true/false
     end
-    print("Applied modifiers:", table.concat(autoFavoriteConfig.selectedModifiers, ", "))
-end
+    
+    -- Bây giờ mới gọi SetValue với dữ liệu đã kiểm tra
+    Solar.Options.ModifierDropdown:SetValue(mutationValues)
+    end
     
     if getgenv().Config["Auto Buy Seeds"] then
         if Solar.Options and Solar.Options.AutoBuyLENGEN and getgenv().Config["Auto Buy Seeds"]["Legendary"] ~= nil then
@@ -777,12 +776,19 @@ Main01:AddDropdown("PlantModeDropdown", {
     Default = {"All"},
     Multi = true,
     Callback = function(Value)
-        selectedPlantMode = {}
-        for mode, isSelected in pairs(Value) do
-            if isSelected then
-                table.insert(selectedPlantMode, mode)
+        -- Tạo bảng mới thay vì thêm vào bảng hiện có
+        local newSelectedPlantMode = {}
+        
+        if type(Value) == "table" then
+            for mode, isSelected in pairs(Value) do
+                if isSelected == true then
+                    table.insert(newSelectedPlantMode, mode)
+                end
             end
         end
+        
+        -- Gán bảng mới
+        selectedPlantMode = newSelectedPlantMode
         
         if autoPlantEnabled then
             stopAutoPlant()
@@ -1286,19 +1292,23 @@ local ModifierDropdown = Main2:AddDropdown("ModifierDropdown", {
 })
 
 ModifierDropdown:OnChanged(function(Value)
-    autoFavoriteConfig.selectedModifiers = {}
-    print("ModifierDropdown values:", Value)
-    if not Value or type(Value) ~= "table" then
-        return
-    end
-    for modifierName, State in pairs(Value) do
-        if State == true then
-            table.insert(autoFavoriteConfig.selectedModifiers, modifierName)
-            print("Added modifier:", modifierName)
+    -- Tạo bảng trống mới thay vì thêm vào bảng hiện có
+    local newSelectedModifiers = {}
+    
+    -- Kiểm tra Value có phải là bảng hợp lệ không
+    if type(Value) == "table" then
+        for modifierName, State in pairs(Value) do
+            if State == true then
+                table.insert(newSelectedModifiers, modifierName)
+            end
         end
     end
-    print("Selected modifiers:", table.concat(autoFavoriteConfig.selectedModifiers, ", "))
-        if autoFavoriteConfig.enabled then
+    
+    -- Gán bảng mới vào biến toàn cục
+    autoFavoriteConfig.selectedModifiers = newSelectedModifiers
+    
+    -- Áp dụng cài đặt nếu tính năng đang được bật
+    if autoFavoriteConfig.enabled then
         pcall(autoFavoriteFruits)
     end
 end)
