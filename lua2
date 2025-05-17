@@ -1,3 +1,4 @@
+print("!")
 local Solar = loadstring(Game:HttpGet("https://raw.githubusercontent.com/HuynkKhoa1/SolarhubUI001/refs/heads/main/Custom_Solar.lua", true))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Th4nh1204/SaveManager.lua/refs/heads/main/Solar"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Th4nh1204/InterfaceManager.lua/refs/heads/main/Solar"))()
@@ -799,7 +800,7 @@ Main1:AddDropdown("HarvestModeDropdown", {
     Title = "Collect Modes",
     Description = "Select mutation fruits to collect",
     Values = {"All", "Only Moonlit", "Only Shocked"},
-    Default = selectedHarvestOptions,
+    Default = {},
     Multi = true,
     Callback = function(Value)
         selectedHarvestOptions = Value
