@@ -50,14 +50,8 @@ local function applyConfigFromGlobal()
     
     if type(collectMode) == "string" then
         local newValue = {}
-        if collectMode == "All" then
-            newValue["All"] = true
-        elseif collectMode == "Only Moonlit" then
-            newValue["Only Moonlit"] = true
-        elseif collectMode == "Only Shocked" then
-            newValue["Only Shocked"] = true
-        else
-            newValue["All"] = true
+        if collectMode == "All" or collectMode == "Only Moonlit" or collectMode == "Only Shocked" then
+            newValue[collectMode] = true
         end
         Solar.Options.HarvestModeDropdown:SetValue(newValue)
     
