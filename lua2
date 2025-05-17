@@ -1,4 +1,3 @@
-print("!")
 local Solar = loadstring(Game:HttpGet("https://raw.githubusercontent.com/HuynkKhoa1/SolarhubUI001/refs/heads/main/Custom_Solar.lua", true))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Th4nh1204/SaveManager.lua/refs/heads/main/Solar"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Th4nh1204/InterfaceManager.lua/refs/heads/main/Solar"))()
@@ -47,19 +46,17 @@ local function applyConfigFromGlobal()
         Solar.Options.AutoCollectSeeds:SetValue(getgenv().Config["Auto Collect"])
     end
     if Solar.Options and Solar.Options.HarvestModeDropdown and getgenv().Config["Collect Mode"] then
-    local collectMode = getgenv().Config["Collect Mode"]
-    
-    if type(collectMode) == "string" then
-        local newValue = {}
-        if collectMode == "All" or collectMode == "Only Moonlit" or collectMode == "Only Shocked" then
-            newValue[collectMode] = true
+    if type(getgenv().Config["Collect Mode"]) == "table" then
+        local selectedModes = {}
+        
+        for modeName, isSelected in pairs(getgenv().Config["Collect Mode"]) do
+            if isSelected then
+                selectedModes[modeName] = true
+            end
         end
-        Solar.Options.HarvestModeDropdown:SetValue(newValue)
-    
-    elseif type(collectMode) == "table" then
-        Solar.Options.HarvestModeDropdown:SetValue(collectMode)
+        Solar.Options.HarvestModeDropdown:SetValue(selectedModes)
+        end
     end
-end
     if Solar.Options and Solar.Options.AutoSell and getgenv().Config["Auto Sell"] ~= nil then
         Solar.Options.AutoSell:SetValue(getgenv().Config["Auto Sell"])
     end
@@ -799,30 +796,16 @@ local selectedHarvestOptions = {}
 Main1:AddDropdown("HarvestModeDropdown", {
     Title = "Collect Modes",
     Description = "Select mutation fruits to collect",
-    Values = {"All", "Only Moonlit", "Only Shocked"},
+    Values = {"All", "Moonlit", "Shocked", "Bloodlit"},
     Default = {},
     Multi = true,
     Callback = function(Value)
         selectedHarvestOptions = Value
-        local hasSelection = false
-        for _, isSelected in pairs(Value) do
+        harvestModes = {}
+        for modeName, isSelected in pairs(Value) do
             if isSelected then
-                hasSelection = true
-                break
+                table.insert(harvestModes, modeName)
             end
-        end
-        if not hasSelection then
-            harvestMode = nil
-            return
-        end
-        if Value["All"] then
-            harvestMode = "All"
-        elseif Value["Only Moonlit"] and Value["Only Shocked"] then
-            harvestMode = "Moonlit_and_Shocked"
-        elseif Value["Only Moonlit"] then
-            harvestMode = "Only Moonlit"
-        elseif Value["Only Shocked"] then
-            harvestMode = "Only Shocked"
         end
     end
 })
@@ -864,7 +847,7 @@ Main1:AddToggle("AutoCollectSeeds", {
                         if farmData.Owner.Value == playerName then
                             local plantsPhysical = farmFolder.Important.Plants_Physical
                             
-                            if harvestMode == "All" then
+                            if table.find(harvestModes, "All") then
                                 for _, plantType in pairs(plantsPhysical:GetChildren()) do
                                     if isSellingInProgress then break end
                                     
@@ -894,82 +877,28 @@ Main1:AddToggle("AutoCollectSeeds", {
                                         end
                                     end
                                 end
-                            elseif harvestMode == "Only Moonlit" then 
-                                local moonlitFruits = {}
+                            else
+                                local specialFruits = {}
                                 for _, plantType in pairs(plantsPhysical:GetChildren()) do
                                     local fruitsFolder = plantType:FindFirstChild("Fruits")
                                     if fruitsFolder then
                                         for _, fruit in pairs(fruitsFolder:GetChildren()) do
-                                            if fruit:GetAttribute("Moonlit") == true then
-                                                table.insert(moonlitFruits, {
-                                                    fruit = fruit,
-                                                    plantType = plantType
-                                                })
-                                            end
-                                        end
-                                    end
-                                end
-                                
-                                for _, info in ipairs(moonlitFruits) do
-                                    if isSellingInProgress then break end
-                                    
-                                    local fruit = info.fruit
-                                    local plantType = info.plantType
-                                    
-                                    local fruitPosition
-                                    if fruit:IsA("BasePart") then
-                                        fruitPosition = fruit.Position
-                                    else
-                                        local part = fruit:FindFirstChildWhichIsA("BasePart")
-                                        if part then
-                                            fruitPosition = part.Position
-                                        end
-                                    end
-                                    
-                                    if fruitPosition then
-                                        local nearestPrompt
-                                        local nearestDistance = math.huge
-                                        
-                                        for _, prompt in pairs(plantType:GetDescendants()) do
-                                            if prompt:IsA("ProximityPrompt") then
-                                                local promptPart = prompt.Parent
-                                                if promptPart and promptPart:IsA("BasePart") then
-                                                    local distance = (promptPart.Position - fruitPosition).Magnitude
-                                                    if distance < nearestDistance then
-                                                        nearestPrompt = prompt
-                                                        nearestDistance = distance
-                                                    end
-                                                end
-                                            end
-                                        end
-                                        
-                                        if nearestPrompt then
-                                            local promptPart = nearestPrompt.Parent
-                                            local targetPosition = promptPart.Position
+                                            local shouldCollect = false
                                             
-                                            local distance = (targetPosition - humanoidRootPart.Position).Magnitude
-                                            if distance <= maxDistance then
-                                                fireproximityprompt(nearestPrompt)
-                                                task.wait(0.15)
-                                            else
-                                                local direction = (targetPosition - humanoidRootPart.Position).Unit
-                                                local closePosition = targetPosition - direction * 3
-                                                humanoidRootPart.CFrame = CFrame.new(closePosition, targetPosition)
-                                                task.wait(0.15)
-                                                fireproximityprompt(nearestPrompt)
-                                                task.wait(0.15)
+                                            if table.find(harvestModes, "Moonlit") and fruit:GetAttribute("Moonlit") == true then
+                                                shouldCollect = true
                                             end
-                                        end
-                                    end
-                                end
-                            elseif harvestMode == "Only Shocked" then
-                                local shockedFruits = {}
-                                for _, plantType in pairs(plantsPhysical:GetChildren()) do
-                                    local fruitsFolder = plantType:FindFirstChild("Fruits")
-                                    if fruitsFolder then
-                                        for _, fruit in pairs(fruitsFolder:GetChildren()) do
-                                            if fruit:GetAttribute("Shocked") == true then
-                                                table.insert(shockedFruits, {
+                                            
+                                            if table.find(harvestModes, "Shocked") and fruit:GetAttribute("Shocked") == true then
+                                                shouldCollect = true
+                                            end
+                                            
+                                            if table.find(harvestModes, "Bloodlit") and fruit:GetAttribute("Bloodlit") == true then
+                                                shouldCollect = true
+                                            end
+                                            
+                                            if shouldCollect then
+                                                table.insert(specialFruits, {
                                                     fruit = fruit,
                                                     plantType = plantType
                                                 })
@@ -978,7 +907,7 @@ Main1:AddToggle("AutoCollectSeeds", {
                                     end
                                 end
                                 
-                                for _, info in ipairs(shockedFruits) do
+                                for _, info in ipairs(specialFruits) do
                                     if isSellingInProgress then break end
                                     
                                     local fruit = info.fruit
