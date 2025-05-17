@@ -800,31 +800,33 @@ end)
 local isSellingInProgress = false
 local harvestMode = nil
 local selectedHarvestOptions = {}
-local mutationsCollect = {"All", "Only Moonlit", "Only Shocked"}
+
 Main1:AddDropdown("HarvestModeDropdown", {
-    Title = "Collect Mode",
+    Title = "Collect Modes",
     Description = "Select mutation fruits to collect",
-    Values = mutationsCollect,
-    Default = {},
+    Values = {"All", "Only Moonlit", "Only Shocked"},
+    Default = selectedHarvestOptions,
     Multi = true,
     Callback = function(Value)
         selectedHarvestOptions = Value
-        harvestModes = {}
-        for modeName, isSelected in pairs(Value) do
+        local hasSelection = false
+        for _, isSelected in pairs(Value) do
             if isSelected then
-                table.insert(harvestModes, modeName)
+                hasSelection = true
+                break
             end
         end
-        
-        if #harvestModes == 0 then
+        if not hasSelection then
             harvestMode = nil
-        elseif table.find(harvestModes, "All") then
+            return
+        end
+        if Value["All"] then
             harvestMode = "All"
-        elseif table.find(harvestModes, "Only Moonlit") and table.find(harvestModes, "Only Shocked") then
+        elseif Value["Only Moonlit"] and Value["Only Shocked"] then
             harvestMode = "Moonlit_and_Shocked"
-        elseif table.find(harvestModes, "Only Moonlit") then
+        elseif Value["Only Moonlit"] then
             harvestMode = "Only Moonlit"
-        elseif table.find(harvestModes, "Only Shocked") then
+        elseif Value["Only Shocked"] then
             harvestMode = "Only Shocked"
         end
     end
